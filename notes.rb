@@ -2887,6 +2887,37 @@ end
 # Create a path to match scenario strings.
 
 
+# Railscast 156 Webrat
+# You can use webrat for Rails integration tests.
+# test/test_helper.rb
+Webrat.configure do |config|
+  config.mode = :rails  # :selenium (not sure if this actually works well or not)
+end
+# test/integration/authentication_test.rb
+class AuthenticationTest < ActionController::IntegrationTest
+  test "logging in with valid username and password" do
+    User.create!(:username => "rbates", :email => "ryan@example.com", :password => "secret")
+    visit login_url
+    fill_in "Username", :with => "rbates"
+    fill_in "Password", :with => "secret"
+    click_button "Log in"
+    assert_contain "Logged in successfully."
+  end
+
+  test "logging in with invalid username and password" do
+    User.create!(:username => "rbates", :email => "ryan@example.com", :password => "secret")
+    visit login_url
+    fill_in "Username", :with => "rbates"
+    fill_in "Password", :with => "badsecret"
+    click_button "Log in"
+    assert_contain "Invalid login or password."
+  end
+end
+
+
+
+
+
 #NEXT (a bookmark for Yong)
 
 
