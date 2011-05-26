@@ -2863,6 +2863,28 @@ form_for [@commentable, Comment.new] do |f|
 
 
 # Railscast 155 Beginning with Cucumber
+# Think of cucumber as a high-level test suite (ala Rails integration tests) applied to the entire stack.
+# script/generate cucumber sets up your Rails app for Cucumber use.
+# Create feature file, eg manage_articles.feature
+Feature: Manage Articles
+  In order to make a blog
+  As an author
+  I want to create and manage articles
+
+  Scenario: Articles List # Three basic parts: given, when, then
+    Given I have articles titled Pizza, Breadsticks
+    When I go to the list of articles
+    Then I should see "Pizza"
+    And I should see "Breadsticks"
+# Run the scenario:
+# cucumber features -n
+# Results in undefined step. Create the step, eg step_definitions/article_steps.rb
+Given /^I have articles titled (.+)$/ do |titles| # Regex submatch passed to block
+  titles.split(', ').each do |title|
+    Article.create!(:title => title)
+  end
+end
+# Create a path to match scenario strings.
 
 
 #NEXT (a bookmark for Yong)
