@@ -2915,6 +2915,101 @@ class AuthenticationTest < ActionController::IntegrationTest
 end
 
 
+# Railscast 157 RSpec Matchers & Macros
+# Enhancing readiblity and reducing duplication.
+# A "Matcher" is the thing that appears after should
+article2.position.should == (article1.position + 1)
+# to
+article2.position.should be_one_more_than(article1.position)
+# One approach: define the function
+def be_one_more_than(number)
+  simple_matcher("on more than #{number}") { |actual| actual == number + 1}
+end
+# But for reuse, create a matcher module like CustomMatchers.
+# Be sure to require the custom matcher in spec_helper.rb, and config.include 'CustomMatchers'
+# TM RSpec bundle has mat snippet, which generates a matcher template
+module CustomMatchers
+  class OneMoreThan
+    def initialize(expected)
+      @expected = expected
+    end
+
+    def matches?(actual)
+      @actual = actual
+      @actual == @expected+1
+    end
+
+    def failure_message_for_should
+      "expected #{@actual.inspect} to be one more than #{@expected.inspect}"
+    end
+
+    def failure_message_for_should_not
+      "expected #{@actual.inspect} not to be one more than #{@expected.inspect}"
+    end
+  end
+
+  def be_one_more_than(expected)
+    OneMoreThan.new(expected)
+  end
+end
+# As for macros...
+# Require them in the spec_helper, and config.include(ControllerMacros, :type => :controller)
+module ControllerMacros
+   def self.included(base)
+    base.extend(ClassMethods)
+  end
+
+  module ClassMethods
+    def it_should_require_admin_for_actions(*actions)
+      actions.each do |action|
+        it "#{action} action should require admin" do
+          get action, :id => 1
+          response.should redirect_to(login_url)
+          flash[:error].should == "Unauthorized Access"
+        end
+      end
+    end
+  end
+  def login_as_admin
+    user = User.new(:username => "admin", :email => "admin@example.com", :password => "secret")
+    user.admin = true
+    user.save!
+    session[:user_id] = user.id
+  end
+end
+# This allows you to...
+it_should_require_admin_for_actions :new, :create, :edit, :update, :destroy
+
+
+# Railscast 158 Factories Not Fixtures
+# See episode 60 "Testing without Fixtures" (Mocha)
+# Data dependencies are tedious.
+# Demonstration of Factory Girl. Mentions Machinist (very concise). ObjectDaddy.
+Factory.define :user do |variable|
+  f.username "foo"
+  f.password "bar"
+  f.password_confirmation { |u| u.password }
+  f.email "foo@example.com"
+  # Need uniqueness? use sequence
+  f.sequence(:email) { |n| "foo#{n}@example.com" }
+end
+# In spec_helper.rb, require .../factories
+user = Factory.create(:user, )
+#or
+user = Factory(:user) # shortcut
+# Can set up some associations w/ FactoryGirl
+Factory.define :article do |f|
+  f.name "Foo"
+  f.association :user
+end
+# Instead of persisting the obj to db, use Factory.build().
+# Factory.attributes_for
+
+
+# Railscast 159 More on Cucumber
+# An update on cucumber features (I didn't watch this. Noted here for reference.)
+
+
 
 
 
