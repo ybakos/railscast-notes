@@ -3010,6 +3010,10 @@ end
 # An update on cucumber features (I didn't watch this. Noted here for reference.)
 
 
+# Railscast 160 Authlogic
+# The canonical authlogic screencast. (Nothing new here for me.)
+
+
 
 
 
