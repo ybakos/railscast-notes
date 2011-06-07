@@ -3014,6 +3014,24 @@ end
 # The canonical authlogic screencast. (Nothing new here for me.)
 
 
+# Railscast 161 Three Profiling Tools
+# Demonstrates New Relic, FiveRuns TuneUp, and Rack::Bug
+# Profile in production, not dev, but you can certainly run New Relic in dev.
+# visit http://localhost/newrelic for page rendering time, sql query times, etc.
+# TuneUP seems dead as of 2011. Anyway, it's a gem.
+# Adds nifty toolbar to a running webapp view with a nice visualization of the rendering time,
+# with a drill-down UI. Also can click on a stacktrace line which jumps to the line of code in TextMate.
+# Rack::Bug is a plugin, provides a toolbar at the top of the webapp view. Install and create an initializer:
+# middleware.rb
+require "rack/bug"
+ActionController::Dispatcher.middleware.use Rack::Bug,
+  :ip_masks   => [IPAddr.new("127.0.0.1")],
+  :secret_key => "epT5uCIchlsHCeR9dloOeAPG66PtHd9K8l0q9avitiaA/KUrY7DE52hD4yWY+8z1",
+  :password   => "secret"
+# localhost/__rack_bug__/bookmarklet.html gives you a little bookmarklet to toggle rack bug on and off.
+
+
+
 
 
 
