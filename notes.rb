@@ -3031,9 +3031,52 @@ ActionController::Dispatcher.middleware.use Rack::Bug,
 # localhost/__rack_bug__/bookmarklet.html gives you a little bookmarklet to toggle rack bug on and off.
 
 
+# Railscast 162 Tree-Based Navigation
+# Uses a cms app as the context for creating a tree-based navigation element via acts_as_tree.
+# Lets the page heirarchy drive the navigation (pages have parents and children).
+f.collection_select :parent_id, Page.all(:order => "name"), :id, :name, :include_blank => true
+# Not much new in this one.
 
 
+# Railscast 163 Self-Referential Association
+# Consider Users with friend relationships (user M:N user).
+# Encourages join model, eg Friendship to encapsulate the relationship.
+# In order to display the inverse, eg "Who has friended me," use additional AR relationship declarations with the other key.
+# user.rb
+has_many :friendships
+has_many :friends, :through => :friendships
+has_many :inverse_friendships, :class_name => "Friendship", :foreign_key => "friend_id"
+has_many :inverse_friends, :through => :inverse_friendships, :source => :user
+# models/friendship.rb
+belongs_to :user
+belongs_to :friend, :class_name => "User"
 
+
+# Railscast 164 Cron in Ruby
+# Sometimes scripting cron is a pain (syntax memorization, etc.)
+# Encourages the "whenever" gem (https://github.com/javan/whenever)
+# Creates a config/schedule.rb
+every 2.hours do
+  rake "thinking_sphinx:index"
+end
+
+every :reboot do
+  rake "thinking_sphinx:start"
+end
+
+every :saturday, :at => "4:38am" do
+  command "rm -rf #{RAILS_ROOT}/tmp/cache"
+  runner "Cart.remove_abandoned"
+end
+# And to use this in your Capistrano deployment...
+after "deploy:symlink", "deploy:update_crontab"
+
+namespace :deploy do
+  desc "Update the crontab file"
+  task :update_crontab, :roles => :db do
+    run "cd #{release_path} && whenever --update-crontab #{application}"
+  end
+end
 
 #NEXT (a bookmark for Yong)
 
