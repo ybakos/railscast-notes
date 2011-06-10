@@ -3078,6 +3078,29 @@ namespace :deploy do
   end
 end
 
+
+# Railscast 165 Edit Multiple
+# References episode 52 (edit checkboxes)
+# Demonstrates editing multiple objects using specialized controller actions.
+# Detects attribute change when not blank (so radios need to be dropdowns, etc)
+# Also demonstrates multiple attribute modification based on original values, such as when
+# one might wish to discount all prices by 20%.
+# product.rb
+def price_modification
+  price
+end
+def price_modification=(new_price)
+  if new_price.to_s.ends_with? "%"
+    self.price += (price * (new_price.to_f/100)).round(2)
+  else
+    self.price = new_price
+  end
+end
+
+
+# Railscast 166
+
+
 #NEXT (a bookmark for Yong)
 
 
