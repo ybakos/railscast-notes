@@ -3098,7 +3098,18 @@ def price_modification=(new_price)
 end
 
 
-# Railscast 166
+# Railscast 166 Metric Fu
+# Generates a bunch of reports from rcov and other tools.
+# Place rakefile in lib/tasks/metric_fu.
+rake metrics:all
+
+
+
+
+
+# Railscast 167
+
+
 
 
 #NEXT (a bookmark for Yong)
