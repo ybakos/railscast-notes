@@ -2813,7 +2813,8 @@ render 'new'# instead of :action => 'new'
 render 'products/edit'# instead of :action => 'product'
 
 
-# Railscast 153 PDFs with Prawn
+# Railscast 153
+# PDFs with Prawn
 # PDF::Writer is ok, but Prawn may be better.
 # Use prawnto as well for Rails work.
 # views/orders/show.pdf.prawn
@@ -2842,7 +2843,8 @@ end
 = link_to "Printable Invoice (PDF)", order_path(@order, :format => 'pdf')
 
 
-# Railscast 154 Polymorphic Association
+# Railscast 154
+# Polymorphic Association
 # Some controller and view tips when using polymorphic associations and nested routes like:
 map.resources :articles, :has_many => :comments
 map.resources :photos, :has_many => :comments
@@ -2862,7 +2864,8 @@ redirect_to :id => nil
 form_for [@commentable, Comment.new] do |f|
 
 
-# Railscast 155 Beginning with Cucumber
+# Railscast 155
+# Beginning with Cucumber
 # Think of cucumber as a high-level test suite (ala Rails integration tests) applied to the entire stack.
 # script/generate cucumber sets up your Rails app for Cucumber use.
 # Create feature file, eg manage_articles.feature
@@ -2887,7 +2890,8 @@ end
 # Create a path to match scenario strings.
 
 
-# Railscast 156 Webrat
+# Railscast 156
+# Webrat
 # You can use webrat for Rails integration tests.
 # test/test_helper.rb
 Webrat.configure do |config|
@@ -2915,7 +2919,8 @@ class AuthenticationTest < ActionController::IntegrationTest
 end
 
 
-# Railscast 157 RSpec Matchers & Macros
+# Railscast 157
+# RSpec Matchers & Macros
 # Enhancing readiblity and reducing duplication.
 # A "Matcher" is the thing that appears after should
 article2.position.should == (article1.position + 1)
@@ -2981,7 +2986,8 @@ end
 it_should_require_admin_for_actions :new, :create, :edit, :update, :destroy
 
 
-# Railscast 158 Factories Not Fixtures
+# Railscast 158
+# Factories Not Fixtures
 # See episode 60 "Testing without Fixtures" (Mocha)
 # Data dependencies are tedious.
 # Demonstration of Factory Girl. Mentions Machinist (very concise). ObjectDaddy.
@@ -3006,15 +3012,18 @@ end
 # Factory.attributes_for
 
 
-# Railscast 159 More on Cucumber
+# Railscast 159
+# More on Cucumber
 # An update on cucumber features (I didn't watch this. Noted here for reference.)
 
 
-# Railscast 160 Authlogic
+# Railscast 160
+# Authlogic
 # The canonical authlogic screencast. (Nothing new here for me.)
 
 
-# Railscast 161 Three Profiling Tools
+# Railscast 161
+# Three Profiling Tools
 # Demonstrates New Relic, FiveRuns TuneUp, and Rack::Bug
 # Profile in production, not dev, but you can certainly run New Relic in dev.
 # visit http://localhost/newrelic for page rendering time, sql query times, etc.
@@ -3031,14 +3040,16 @@ ActionController::Dispatcher.middleware.use Rack::Bug,
 # localhost/__rack_bug__/bookmarklet.html gives you a little bookmarklet to toggle rack bug on and off.
 
 
-# Railscast 162 Tree-Based Navigation
+# Railscast 162
+# Tree-Based Navigation
 # Uses a cms app as the context for creating a tree-based navigation element via acts_as_tree.
 # Lets the page heirarchy drive the navigation (pages have parents and children).
 f.collection_select :parent_id, Page.all(:order => "name"), :id, :name, :include_blank => true
 # Not much new in this one.
 
 
-# Railscast 163 Self-Referential Association
+# Railscast 163
+# Self-Referential Association
 # Consider Users with friend relationships (user M:N user).
 # Encourages join model, eg Friendship to encapsulate the relationship.
 # In order to display the inverse, eg "Who has friended me," use additional AR relationship declarations with the other key.
@@ -3052,7 +3063,8 @@ belongs_to :user
 belongs_to :friend, :class_name => "User"
 
 
-# Railscast 164 Cron in Ruby
+# Railscast 164
+# Cron in Ruby
 # Sometimes scripting cron is a pain (syntax memorization, etc.)
 # Encourages the "whenever" gem (https://github.com/javan/whenever)
 # Creates a config/schedule.rb
@@ -3079,7 +3091,8 @@ namespace :deploy do
 end
 
 
-# Railscast 165 Edit Multiple
+# Railscast 165
+# Edit Multiple
 # References episode 52 (edit checkboxes)
 # Demonstrates editing multiple objects using specialized controller actions.
 # Detects attribute change when not blank (so radios need to be dropdowns, etc)
@@ -3098,17 +3111,46 @@ def price_modification=(new_price)
 end
 
 
-# Railscast 166 Metric Fu
+# Railscast 166
+# Metric Fu
 # Generates a bunch of reports from rcov and other tools.
 # Place rakefile in lib/tasks/metric_fu.
 rake metrics:all
 
 
-
-
-
 # Railscast 167
+# More on Virtual Attribtues
+# See Railscast 16 "virtual attributes"
+# Uses a tagging example with AR callbacks for model generation from attribute value.
+# article.rb
+class Article < ActiveRecord::Base
+  has_many :comments, :dependent => :destroy
+  has_many :taggings, :dependent => :destroy
+  has_many :tags, :through => :taggings
+  validates_presence_of :name, :content
+  attr_writer :tag_names
+  after_save :assign_tags
 
+  def tag_names
+    @tag_names || tags.map(&:name).join(' ')
+  end
+
+  private
+
+  def assign_tags
+    if @tag_names
+      self.tags = @tag_names.split(/\s+/).map do |name|
+        Tag.find_or_create_by_name(name)
+      end
+    end
+  end
+end
+# _form.html
+= f.label :tag_names
+= f.text_field :tag_names
+
+
+# Railscast 168
 
 
 
