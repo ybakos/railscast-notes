@@ -3188,6 +3188,47 @@ class FeedEntry < ActiveRecord::Base
 end
 
 
+# Railsast 169
+# Dynamic Page Caching
+# Generate static html files With basic caching...
+# environment config:
+config.action_controller.perform_caching = true
+# controller:
+caches_page :index
+# Limited for dynamic pages (eg, when displaying current user name)
+# So, we've got fragment caching, but fragments may be dynamic, say, based on user role.
+# Proposes solution of using page caching, but extracting dynamic compents out of static page, and then load the dynamic components via JS. (!)
+# I'm not so sure I like this solution, the comments generated some nice information and debate.
+# Plus, perhaps some of this is alleviated with the :layout => false option on the caches_action macro.
+#layouts/application.html.erb
+= render 'layouts/dynamic_header' unless @hide_dynamic
+# index.html.erb. Note the display:nones.
+- javascript "jquery", "/users/current" # Bates' nifty helper
+- @hide_dynamic = true
+<div id="forums">
+  <% for forum in @forums %>
+    <div class="forum">
+      <h2><%= link_to h(forum.name), forum %></h2>
+      <p><%=h forum.description %></p>
+      <p class="admin" style="display:none">
+        <%= link_to "Edit", edit_forum_path(forum) %> |
+        <%= link_to "Destroy", forum, :confirm => 'Are you sure?', :method => :delete %>
+      </p>
+    </div>
+  <% end %>
+</div>
+<p class="admin" style="display:none"><%= link_to "New Forum", new_forum_path %></p>
+# show.js.erb
+$(document).ready(function() {
+  $("#container").prepend('<%=escape_javascript render("layouts/dynamic_header") %>');
+  <% if admin? %>
+    $(".admin").show();
+  <% end %>
+});
+# Also, check out Easy ESI: http://github.com/grosser/easy_esi
+
+
+
 
 #NEXT (a bookmark for Yong)
 
