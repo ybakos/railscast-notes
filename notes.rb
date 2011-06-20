@@ -3228,6 +3228,53 @@ $(document).ready(function() {
 # Also, check out Easy ESI: http://github.com/grosser/easy_esi
 
 
+# Railscast 170
+# OpenID with AuthLogic
+# Refers to authlogic basics in episode 160.
+# sudo gem install ruby-openid authlogic-oid
+# Remember to rake the additional openID auth table migration: rake open_id_authentication:db:create
+# Add openID identifier to user model.
+# Change the usual controller object save logic to use a block, so authlogic can work its magic.
+def create
+  @user = User.new(params[:user])
+  @user.save do |result|
+    if result
+      flash[:notice] = "Registration successful."
+      redirect_to root_url
+    else
+      render :action => 'new'
+    end
+  end
+end
+# Just be aware that for update, use :attributes (since update_attributes doesn't use a block(?))
+def update
+  @user = current_user
+  @user.attributes = params[:user]
+  @user.save do |result|
+    if result
+      flash[:notice] = "Successfully updated profile."
+      redirect_to root_url
+    else
+      render :action => 'edit'
+    end
+  end
+end
+# And for user attribute/openId mappings and the authlogic binding:
+# models/user.rb
+acts_as_authentic do |c|
+  c.openid_required_fields = [:nickname, :email]
+end
+
+private
+
+def map_openid_registration(registration)
+  self.email = registration["email"] if email.blank?
+  self.username = registration["nickname"] if username.blank?
+end
+# Demonstrates some UI massaging, esp with regard to validation messages, etc.
+
+
+
 
 
 #NEXT (a bookmark for Yong)
