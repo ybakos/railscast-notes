@@ -3274,10 +3274,24 @@ end
 # Demonstrates some UI massaging, esp with regard to validation messages, etc.
 
 
-
-
-
-#NEXT (a bookmark for Yong)
+# Railscast 171
+# Delayed Job
+# Note that DJ was extracted from Shopify. (But use collectiveidea's version)
+# http://github.com/collectiveidea/delayed_job
+# Check out the recipes subdirectory in the repo.
+# script/generate delayed_job (creates the delayed_jobs table)
+# rake jobs:work
+object.send_later(:method_name)
+# Or create your own job classes (with perform method):
+# lib/mailing_job.rb
+class MailingJob < Struct.new(:mailing_id) # This is a nice little rubyism that saves a few lines of mundane code.
+  def perform
+    mailing = Mailing.find(mailing_id)
+    mailing.deliver
+  end
+end
+# And use it like so:
+Delayed::Job.enqueue(MailingJob.new(params[:id]), -3, 3.days.from_now)
 
 
 # Railscast 172
@@ -3292,6 +3306,13 @@ belongs_to :article, :touch => true
 # articles/show.html.erb
 - cache @article do
   ...
+
+
+#
+
+
+#NEXT (a bookmark for Yong)
+
 
 # Railscast 188
 # Declarative authorization with declarative_authorization
