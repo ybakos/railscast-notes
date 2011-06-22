@@ -3308,7 +3308,38 @@ belongs_to :article, :touch => true
   ...
 
 
-#
+# Railscast 173
+# Screen Scraping with ScrAPI
+# product.rb
+def self.fetch_prices
+  scraper = Scraper.define do
+    process "div.firstRow div.priceAvail>div>div.PriceCompare>div.BodyS", :price => :text
+    result :price
+  end
+  find_all_by_price(nil).each do |product|
+    uri = URI.parse("http://www.walmart.com/search/search-ng.do?search_constraint=0&ic=48_0&search_query=" + CGI.escape(product.name) + "&Find.x=0&Find.y=0&Find=Find")
+    product.update_attribute :price, scraper.scrape(uri)[/[.0-9]+/]
+  end
+end
+# scrapitest.rb
+require 'rubygems'
+require 'scrapi'
+scraper = Scraper.define do
+  array :items
+  process "div.item", :items => Scraper.define {
+    process "a.prodLink", :title => :text, :link => "@href"
+    process "div.priceAvail>div>div.PriceCompare>div.BodyS", :price => :text
+    result :price, :title, :link
+  }
+  result :items
+end
+uri = URI.parse("http://www.walmart.com/search/search-ng.do?search_constraint=0&ic=48_0&search_query=lost+third+season&Find.x=0&Find.y=0&Find=Find")
+scraper.scrape(uri).each do |product|
+  puts product.title
+  puts product.price
+  puts product.link
+  puts
+end
 
 
 #NEXT (a bookmark for Yong)
