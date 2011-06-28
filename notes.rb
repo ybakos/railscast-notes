@@ -3359,7 +3359,7 @@ $(function() {
   });
 });
 // For older jQuery versions...
-// jQuery.ajaxSetup({ 
+// jQuery.ajaxSetup({
 //   'beforeSend': function(xhr) {xhr.setRequestHeader("Accept", "text/javascript")}
 // });
 
@@ -3377,12 +3377,12 @@ $(function() {
     $(".pagination").html("Page is loading...");
     return false;
   });
-  
+
   $.fragmentChange(true);   // Provided by jQuery URL Utils plugin
   $(document).bind("fragmentChange.page", function() {
     $.getScript($.queryString(document.location.href, { "page" : $.fragment().page }));
   });
-  
+
   if ($.fragment().page) { // Make sure when we reload a page or visit it the first time, it sends the AJAX request for the particular page fragment.
     $(document).trigger("fragmentChange.page");
   }
@@ -3437,6 +3437,46 @@ index.html.erb
 
 
 # Railscast 177
+# Model Versioning
+# Suggests trying Vestal Versions, has some nice time-related features.
+# Create the versions table...
+script/generate vestal_versions_migration
+script/generate migration version_existing_pages
+# Call the macro in your AR model
+# models/page.rb
+class Page < ActiveRecord::Base
+  versioned
+end
+# run the version_existing_pages migration
+say_with_time "Setting initial version for pages" do
+  Page.find_each(&:touch)
+end
+# View...
+<p>
+  <%= link_to "Edit", edit_page_path(@page) %>
+  | Version <%= @page.version %>
+  <% if @page.version > 1 %>
+    | <%= link_to "Previous version", :version => @page.version-1 %>
+  <% end %>
+  <% if params[:version] %>
+    | <%= link_to "Latest version", :version => nil %>
+  <% end %>
+</p>
+#pages_controller.rb
+def show
+  @page = Page.find(params[:id])
+  @page.revert_to(params[:version].to_i) if params[:version]
+end
+# Other cool features...
+p = Page.all
+p.versions # Array of all versions
+p.revert_to(7.minutes.ago) # Reverts to the version that was current at that time
+p.content
+p.revert_to(:last) # Some handy symbols you can pass
+
+
+# Railscast 178
+
 
 
 #NEXT (a bookmark for Yong)
