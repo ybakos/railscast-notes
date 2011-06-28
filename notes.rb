@@ -3342,6 +3342,103 @@ scraper.scrape(uri).each do |product|
 end
 
 
+# Railscast 174
+# Ajax Pagination
+# Still uses will_paginate, but with jQuery to add behavior.
+# Illustrates the use of the jQuery live() method.
+# Illustrates the usefulness via the ajax-rendered pagination links that need the onClick behavior.
+# Note that xhr requests should include the Accept javascript header in order for Rails to render the .js.erb view.
+# products/index.js.erb
+$("#products").html("<%= escape_javascript(render("products")) %>");
+# public/javascripts/pagination.js
+$(function() {
+  $(".pagination a").live("click", function() {
+    $(".pagination").html("Page is loading...");
+    $.getScript(this.href);
+    return false;
+  });
+});
+// For older jQuery versions...
+// jQuery.ajaxSetup({ 
+//   'beforeSend': function(xhr) {xhr.setRequestHeader("Accept", "text/javascript")}
+// });
+
+
+# Railscast 175
+# AJAX History and Bookmarks
+# One approach is to append an anchor to the URL.
+# Uses the jQuery URL Utils Plugin
+# -- now deprecated. See jQuery BBQ plugin and the jQuery urlInternal plugins.
+# Throw jquery.ba-url.js in the /javascripts junk drawer.
+# pagination.js
+$(function() {
+  $(".pagination a").live("click", function() {
+    $.setFragment({ "page" : $.queryString(this.href).page }) // Provided by jQuery URL Utils plugin
+    $(".pagination").html("Page is loading...");
+    return false;
+  });
+  
+  $.fragmentChange(true);   // Provided by jQuery URL Utils plugin
+  $(document).bind("fragmentChange.page", function() {
+    $.getScript($.queryString(document.location.href, { "page" : $.fragment().page }));
+  });
+  
+  if ($.fragment().page) { // Make sure when we reload a page or visit it the first time, it sends the AJAX request for the particular page fragment.
+    $(document).trigger("fragmentChange.page");
+  }
+});
+
+
+# Railscast 176
+# Searchlogic
+# Code smell: programmatic query conditions
+# Searchlogic pretty much generates a ton of nice named_scopes efficiently via method_missing.
+# Tip: Don't forget that _ in irb returns the return value of the last command (handy when you forget to assign the value of an expression to a variable)
+# Some examples:
+Product.name_like("Video")
+Product.name_not_like("Video").price_gt(5).price_lt(200)
+Product.name_like_any(["couch", "table"])
+Product.name_like_all(["video", "console"])
+Product.category_name_like("elect")
+Product.search(:category_name_like => "elect", :price_lt => "100") # Generates a 'search' object applying the particular hash options
+s.all
+s.name_like("video")
+Product.ascend_by_name
+#products_controller.rb
+@products = Product.name_like_all(params[:search].to_s.split).ascend_by_name
+# or
+@search = Product.search(params[:search])
+@products = @search.all
+# index.html
+index.html.erb
+<% form_for @search do |f| %>
+  <p>
+    <%= f.label :name_like, "Name" %><br />
+    <%= f.text_field :name_like %>
+  </p>
+  <p>
+    <%= f.label :category_id_equals, "Category" %><br />
+    <%= f.collection_select :category_id_equals, Category.all, :id, :name, :include_blank => true %>
+  </p>
+  <p>
+    <%= f.label :price_gte, "Price Range" %><br />
+    <%= f.text_field :price_gte, :size => 8 %> - <%= f.text_field :price_lte, :size => 8 %>
+  </p>
+  <p>
+    <%= f.submit "Submit" %>
+  </p>
+<% end %>
+<p>
+  Sort by:
+  <%= order @search, :by => :name %> |
+  <%= order @search, :by => :price %>
+</p>
+# Also provides a nice order helper to allow user to choose the sort criteria of search results
+
+
+# Railscast 177
+
+
 #NEXT (a bookmark for Yong)
 
 
