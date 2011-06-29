@@ -3476,7 +3476,28 @@ p.revert_to(:last) # Some handy symbols you can pass
 
 
 # Railscast 178
+# Seven Security Tips
+# 1) Mass assignment
+# Symptom: update_attributes(param[:project])
+# Use attr_accessible
+# 2) File uploads
+# Symptom: unchecked file types could, for example, a .php file that gets executed on the server when requested
+# Check content type, file extension, apache config (turn off script execution)
+# 3) Filter log params
+# filter_paramter_logging :password
+# 4) CSRF protection
+# make sure protect_from_forgery is called in ApplicationController.
+# 5) Authorizing Ownership
+# Symptom: users might manipulate id in url, accessing model data that isn't "theirs"
+# Simplest solution: always used model-scoped finders, eg. current_user.projects (not Project.find())
+# 6) SQL Injection
+# Don't interpolate strings, use AR's ? syntax for condition.
+# 7) HTML Injection (XSS)
+# Symptom: rendering data that is user-generated/accessible
+# Be sure to h() (or use sanitize() to whitelist some tags). (Now the default behavior in Rails 3)
 
+
+# Railscast 179
 
 
 #NEXT (a bookmark for Yong)
