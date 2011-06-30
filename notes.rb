@@ -3498,6 +3498,15 @@ p.revert_to(:last) # Some handy symbols you can pass
 
 
 # Railscast 179
+# Seed Data
+# Not much new here.
+# To use fixture data as seed data:
+require 'active_record/fixtures'
+Fixtures.create_fixtures("#{Rails.root}/test/fixtures", "operating_systems")
+
+
+# Railscast 180
+
 
 
 #NEXT (a bookmark for Yong)
