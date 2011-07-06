@@ -3512,6 +3512,51 @@ Fixtures.create_fixtures("#{Rails.root}/test/fixtures", "operating_systems")
 # https://github.com/aanand/deadweight
 
 
+# Railscast 181
+# Include vs Joins
+# Given a user, comment, membership and group model...
+# models/comment.rb
+class Comment < ActiveRecord::Base
+  belongs_to :user
+end
+# models/user.rb
+class User < ActiveRecord::Base
+  has_many :memberships
+  has_many :groups, :through => :memberships
+  has_many :comments
+end
+# models/membership.rb
+class Membership < ActiveRecord::Base
+  belongs_to :user
+  belongs_to :group
+end
+# models/group.rb
+class Group < ActiveRecord::Base
+  has_many :memberships
+  has_many :users, :through => :memberships
+  def comments
+    Comment.scoped(:joins => {:user => :memberships}, :conditions => { :memberships => { :group_id => id } })
+  end
+end
+# Bottom line, use :include when you want to work with the associated model attributes (and don't when you don't).
+# Use :join when you want to specify find conditions that are depenedent on associated table attributes.
+# Examples
+c = Comment.all(:joins => :user, :conditions => { :users => { :admin => true } })
+c.first.users # Generates another query
+c = Comment.all(:include => :user, :conditions => { :users => { :admin => true } })
+c.first.users # No additional query
+User.all(:joins => :comments, :select => "users.*, count(comments.id) as comments_count", :group => "users.id")
+# The above finder allows us to load the comment count as an attirbute rather than executing a query for each user.comments.count.
+g = Group.first
+Comment.all(:joins => {:user => :memberships}, :conditions => { :memberships => { :group_id => g.id } })
+# Which can be refactored to...
+# group.rb
+def comments
+  Comment.scoped(:joins => {:user => :memberships}, :conditions => { :memberships => { :group_id => id } })
+end
+# The benefit being that you can chain the call of g.comments
+
+
 
 #NEXT (a bookmark for Yong)
 
