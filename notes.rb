@@ -3506,6 +3506,10 @@ Fixtures.create_fixtures("#{Rails.root}/test/fixtures", "operating_systems")
 
 
 # Railscast 180
+# Finding unused CSS
+# CSS Cruft? Try Dust-Me Selectors (FF plugin)
+# Try the deadweight gem, a css coverage tool, via command line or rake task.
+# https://github.com/aanand/deadweight
 
 
 
