@@ -3557,6 +3557,17 @@ end
 # The benefit being that you can chain the call of g.comments
 
 
+# Railscast 182
+# Cropping images
+# Super cool approach to empowering users w/ ability to crop their uploaded images. Neat-o.
+# Promotes Jcrop w/ jQuery. (See JavaScript Image Cropper UI for Prototype).
+# See show notes for code http://railscasts.com/episodes/182-cropping-images
+# And Rails demo app: https://github.com/jschwindt/rjcrop
+
+
+# Railscast 183
+
+
 
 #NEXT (a bookmark for Yong)
 
