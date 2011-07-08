@@ -3566,6 +3566,23 @@ end
 
 
 # Railscast 183
+# Gemcutter and Jeweler
+# References cast 135 "making a gem"
+sudo gem update --system
+sudo gem install gemcutter
+gem tumble
+gem build uniquify.gemspec
+gem push uniquify-0.1.0.gem
+sudo gem install jeweler
+rake --tasks
+rake version:write
+rake version:bump:minor
+rake gemcutter:release
+# Ease the making of gemspec files with
+# Note: Check out the gemspec reference
+# Use jeweler. Add jeweler tasks to your gem's Rakefile and execute.
+# Note that jeweler provides a generator for initial project creation.
+
 
 
 
