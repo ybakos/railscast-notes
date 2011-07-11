@@ -3584,6 +3584,22 @@ rake gemcutter:release
 # Note that jeweler provides a generator for initial project creation.
 
 
+# Railscast 184
+# Formtastic, Part 1
+# Tip: Don't forget about the :cache option for stylesheet_link_tag helper
+# Takes the burden out of explicit form declarations and styling.
+- semantic_form_for @animal do |f|
+  f.inputs do
+    = f.input :name
+    = f.input :born_on, :start_year => 1900
+    = f.input :category, :include_blank => false
+    = f.input :female, :as => :radio, :label => "Gender", :collection => [["Male", false], ["Female", true]]
+  = f.buttons
+
+
+# Railscast 185
+# Formtastic, Part 2
+
 
 
 #NEXT (a bookmark for Yong)
