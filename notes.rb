@@ -3599,7 +3599,11 @@ rake gemcutter:release
 
 # Railscast 185
 # Formtastic, Part 2
+# Demonstrates additional features such as validation introspection, styling, field hints, etc.
 
+
+# Railscast 186
+#
 
 
 #NEXT (a bookmark for Yong)
