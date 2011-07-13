@@ -3603,8 +3603,14 @@ rake gemcutter:release
 
 
 # Railscast 186
-#
+# Pickle with Cucumber
+# Refs 155, 159 (Cucumber)
+# Fancy. Adds steps to cucumber to declare models from factories or AR.
+# See https://github.com/ianwhite/pickle
 
+
+# Railscast 187
+#
 
 #NEXT (a bookmark for Yong)
 
