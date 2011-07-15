@@ -3610,9 +3610,28 @@ rake gemcutter:release
 
 
 # Railscast 187
-#
+# Testing Exceptions
+# Refs 104 (Ex notifications), 158 (factories), 156 (webrat)
+# Don't just jump in and fix the bug, create a test that exhibits it (eh, right).
+script/generate integration_test exceptions
+rake test:integration
+# Create an integration test, duplicate the request by including the parameters from the exception's context.
+class ExceptionsTest < ActionController::IntegrationTest
+  fixtures :all
 
-#NEXT (a bookmark for Yong)
+  test "POST /products" do
+    post "/products", "commit"=>"Submit", "product"=>{"name"=>"Headphones", "price"=>"-2"}
+    assert_response :success
+  end
+
+  test "GET /products/8/edit" do
+    product = Product.first
+    get "/products/#{product.id}/edit"
+    assert_response :success
+  end
+end
+# Damn commas! :)
+# Recommends webrat for integration testing / duplicating users' behavior.
 
 
 # Railscast 188
@@ -3661,6 +3680,51 @@ filter_resource_access
 <% if permitted_to? :destroy, @article %>
   <%= link_to "Destroy", @article, :method => :delete, :confirm => "Are you sure?" %> |
 <% end %>
+
+
+# Railscast 189
+# Embedded Association
+# Consider the usual Role:User relationship. Coupling between roles and, say, declarative auth rules.
+# How can we define roles in just the code and not in the DB?
+# Two different approaches. For 1:M, simply add role string attribute.
+# For 1:M, you could serialize the roles attribute. But "finding all admins" is tough.
+# Use a bitmask, and a single integer column!
+script/generate migration add_roles_mask_to_users roles_mask:integer
+# models/user.rb
+class User < ActiveRecord::Base
+  acts_as_authentic
+  has_many :articles
+  has_many :comments
+
+  named_scope :with_role, lambda { |role| {:conditions => "roles_mask & #{2**ROLES.index(role.to_s)} > 0"} }
+
+  ROLES = %w[admin moderator author]
+
+  def roles=(roles)
+    self.roles_mask = (roles & ROLES).map { |r| 2**ROLES.index(r) }.sum
+  end
+
+  def roles
+    ROLES.reject { |r| ((roles_mask || 0) & 2**ROLES.index(r)).zero? }
+  end
+
+  def role_symbols
+    roles.map(&:to_sym)
+  end
+end
+# users/new.html.erb
+= f.label :roles
+  for role in User::ROLES
+  = check_box_tag "user[roles][]", role, @user.roles.include?(role)
+  =h role.humanize
+= hidden_field_tag "user[roles][]", "" # For making sure roles[] is always sent, triggering roles=
+
+# A great example of using bitmasking in Ruby!
+# Litmus test for this approach: would you ever make db/code changes when one or the other changes?
+
+
+# Railscast 190
+
 
 
 # Railscast 209 Devise
