@@ -3755,6 +3755,32 @@ end
 # What if you have to log in to access data? Use Mechanize.
 
 
+# Railscast 190
+# Mechanize
+# For automating more complex req/resp interaction. Uses tada list as the datasource.
+# lib/tasks/product_prices.rake
+desc "Import wish list"
+task :import_list => :environment do
+  require 'mechanize'
+  agent = WWW::Mechanize.new
+
+  agent.get("http://railscasts.tadalist.com/session/new")
+  form = agent.page.forms.first
+  form.password = "secret"
+  form.submit
+
+  agent.page.link_with(:text => "Wish List").click
+  agent.page.search(".edit_item").each do |item|
+    Product.create!(:name => item.text.strip)
+  end
+end
+# Awesome console tip:
+puts Readline::HISTORY.entries.split("exit").last[0..-2].join("\n")
+
+
+
+
+
 
 # Railscast 209 Devise
 rails g devise:install
