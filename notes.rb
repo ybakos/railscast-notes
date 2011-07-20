@@ -3755,7 +3755,7 @@ end
 # What if you have to log in to access data? Use Mechanize.
 
 
-# Railscast 190
+# Railscast 191
 # Mechanize
 # For automating more complex req/resp interaction. Uses tada list as the datasource.
 # lib/tasks/product_prices.rake
