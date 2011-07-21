@@ -3778,6 +3778,74 @@ end
 puts Readline::HISTORY.entries.split("exit").last[0..-2].join("\n")
 
 
+# Railscast 192
+# Authorization with CanCan
+# models/ability.rb
+class Ability
+  include CanCan::Ability
+
+  def initialize(user)
+    user ||= User.new # guest user
+
+    if user.role? :admin
+      can :manage, :all
+    else
+      can :read, :all
+      can :create, Comment
+      can :update, Comment do |comment|
+        comment.try(:user) == user || user.role?(:moderator)
+      end
+      if user.role?(:author)
+        can :create, Article
+        can :update, Article do |article|
+          article.try(:user) == user
+        end
+      end
+    end
+  end
+end
+# In views...
+- if can? :update, @article
+  = link_to "Edit", edit_article_path(@article)
+# application_controller.rb
+unauthorized! if cannot? :update, @article
+# or for dryness, use the macro
+load_and_authorize_resource # Loads the model(s) in restful controllers
+# or
+load_and_authorize_resource :nested => :article
+# Handle the unaurhorized behavior by rescuing the exception in application_controller.rb
+rescue_from CanCan::AccessDenied do |exception|
+  flash[:error] = "Access denied."
+  redirect_to root_url
+end
+
+
+# Railscast 193
+# Tableless Models
+# Override a couple methods so Rails doesn't freak when there's no table behind the model.
+# Might be irrelevent now that we have ActiveModel
+# models/recommendation.rb
+class Recommendation < ActiveRecord::Base
+  class_inheritable_accessor :columns
+
+  def self.columns() @columns ||= []; end
+
+  def self.column(name, sql_type = nil, default = nil, null = true)
+    columns << ActiveRecord::ConnectionAdapters::Column.new(name.to_s, default, sql_type.to_s, null)
+  end
+
+  column :from_email, :string
+  column :to_email, :string
+  column :article_id, :integer
+  column :message, :text
+
+  validates_format_of :from_email, :to_email, :with => /^[-a-z0-9_+\.]+\@([-a-z0-9]+\.)+[a-z0-9]{2,4}$/i
+  validates_length_of :message, :maximum => 500
+
+  belongs_to :article
+end
+# Bates' motivation is the desire for validators/form validation and associations, for example.
+
 
 
 
