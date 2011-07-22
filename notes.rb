@@ -3847,6 +3847,23 @@ end
 # Bates' motivation is the desire for validators/form validation and associations, for example.
 
 
+# Railscast 194
+# Mongomapper
+# config/initializers/mongo_config.rb
+MongoMapper.database = "todo-#{Rails.env}"
+# Models do not extend AR.
+# models/project.rb
+class Project
+  include MongoMapper::Document
+
+  key :name, String, :required => true
+  key :priority, Integer
+
+  many :tasks
+end
+# Mongomapper provides AR-like finders. For more complex queries, provides API to abstract mongo queries.
+
+
 
 
 
