@@ -3864,6 +3864,56 @@ end
 # Mongomapper provides AR-like finders. For more complex queries, provides API to abstract mongo queries.
 
 
+# Railscast 195
+# Favorite Webapps of 2009
+# Not much new here (added to Evernote)
+
+
+# Railcast 196
+# Nested Model Form Pt. I
+# Refers to 73, "complex forms" which is a bit out of date.
+# Key is accepts_nested_attributes_for and fields_for.
+# For #new views, you'll need to build the associated models first in the controller action, eg:
+3.times {@survey.questions.build}
+# accepts_nested_attributes_for has :reject_if option that accepts a lambda to control if nested models are created (eg, if fields are blank)
+# Also has :allow_destroy option, which you can control with the secret :_destroy attribute (bound to a checkbox)
+
+
+# Railscast 197
+# Nested Model Form Pt. II
+# Managing the fields through JavaScript (Prototype)
+# Fields to add remove can be placed in elements with 'fields' class, for example.
+# Changes the :_destroy attribute checkbox to a hidden field and a link
+= link_to_remove_fields "remove", f
+# Which calls...
+def link_to_remove_fields(name, f)
+  f.hidden_field(:_destroy) + link_to_function(name, "remove_fields(this)")
+end
+# Which calls the associated JS function to remove fields visually and set _destroy to true
+function remove_fields(link) {
+  $(link).previous("input[type=hidden]").value = "1";
+  $(link).up(".fields").hide();
+}
+# Adding fields is a little more tricky, because JS needs a 'copy' of some blank fields
+# Bates defines a helper...
+def link_to_add_fields(name, f, association)
+  new_object = f.object.class.reflect_on_association(association).klass.new
+  fields = f.fields_for(association, new_object, :child_index => "new_#{association}") do |builder|
+    render(association.to_s.singularize + "_fields", :f => builder)
+  end
+  link_to_function(name, h("add_fields(this, '#{association}', '#{escape_javascript(fields)}')"))
+end
+# Called like...
+= link_to_add_fields "Add Answer", f, :answers
+# Which triggers the JS function...
+function add_fields(link, association, content) {
+  var new_id = new Date().getTime();
+  var regexp = new RegExp("new_" + association, "g")
+  $(link).up().insert({
+    before: content.replace(regexp, new_id)
+  });
+}
+# That function generates a unique DOM ID using current time.
 
 
 
