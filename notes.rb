@@ -3867,6 +3867,7 @@ end
 
 
 
+
 # Railscast 209 Devise
 rails g devise:install
 rails g devise User
