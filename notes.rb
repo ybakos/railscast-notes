@@ -3916,6 +3916,30 @@ function add_fields(link, association, content) {
 # That function generates a unique DOM ID using current time.
 
 
+# Railscast 198
+# Edit multiple individually
+# Refers to 165, in which an attribute in a form can be applied to multiple model instances.
+# This cast demonstrates creating an set of fields for each model instance in a form.
+# routes.rb
+map.resources :products, :collection => { :edit_individual => :post, :update_individual => :put }
+# I'm not sure why bates chooses post for edit.
+# In the view...
+form_tag update_individual_products_path, :method => :put do
+  - for product in @products
+    fields_for "products[]", product do |f|
+      =h product.name
+      = render "fields", :f => f
+# NOTE: fields_for is fucking smart, when it receives a name paramter with brackets, it automatically
+#       places the id of the object passed to fields_for within the brakcets
+def update_individual
+  @products = Product.update(params[:products].keys, params[:products].values).reject { |p| p.errors.empty? }
+  if @products.empty?
+    flash[:notice] = "Products updated"
+    redirect_to products_url
+  else
+    render :action => "edit_individual"
+  end
+end
 
 
 # Railscast 209 Devise
