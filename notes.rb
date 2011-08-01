@@ -3942,6 +3942,45 @@ def update_individual
 end
 
 
+# Railscast 199
+# Mobile Devices
+= stylesheet_link_tag 'mobile' if mobile_device? # media is ok, but let's assume you need this helper for behavior too.
+# application_controller.rb
+
+before_filter :prepare_for_mobile
+
+private
+
+def mobile_device?
+  if session[:mobile_param]
+    session[:mobile_param] == "1"
+  else
+    request.user_agent =~ /Mobile|webOS/
+  end
+end
+helper_method :mobile_device?
+
+def prepare_for_mobile
+  session[:mobile_param] = params[:mobile] if params[:mobile]
+  request.format = :mobile if mobile_device?
+end
+
+# In the view, can implement a "full site" link like so...
+if mobile_device?
+  = link_to "Full Site", :mobile => 0
+else
+  = link_to "Mobile Site", :mobile => 1
+end
+# javascripts/mobile.js
+$.jQTouch({}); # Bates uses jqTouch for this demo
+
+# TIP: use request.format attribute and filenames (eg, viewname.mobile.erb) for simple rendering
+
+
+# Railscast 200
+
+
+
 # Railscast 209 Devise
 rails g devise:install
 rails g devise User
