@@ -3978,6 +3978,11 @@ $.jQTouch({}); # Bates uses jqTouch for this demo
 
 
 # Railscast 200
+# Rails 3 Beta and RVM
+# Nothing new here.
+
+
+# Railscast 201
 
 
 
