@@ -3983,6 +3983,45 @@ $.jQTouch({}); # Bates uses jqTouch for this demo
 
 
 # Railscast 201
+# Bundler
+# Not much new here.
+# Gemfile
+gem "name", ">=version", :require => 'lib name', :git => 'repo source', :group => 'mygroup'
+# Handy commands
+bundle check # List missing dependencies
+bundle help
+bundle install --without=test
+bundle lock  # Locks the dependencies in the Gemfile to, for example, versions.
+             # Prevents bundle install from installing newer versions, ensuring version in different envs.
+bundle install --relock
+ls ~/.bundle # Where bundler installs gems... or used to. Is this deprecated? I don't have one.
+bundle pack # Generates .gem files.
+ls vendor/cache
+
+
+# Railscast 202
+# Rails 3 Active Record Query Interface
+# options for :find are deprecated, use chained methods instead:
+Article.order("published_at desc").limit(10)
+Article.where("published_at <= ?", Time.now).includes(:comments)
+Article.order("published_at").last # Like "published_at desc"
+# And note that those methods send a Relation object that also implements enumerable/array-like behavior.
+articles = Article.order("name")
+articles.all
+articles.first
+# And you can grab the sql...
+Article.recent.to_sql
+# And of course named_scope is now scope
+scope :visible, where("hidden != ?", true)
+scope :published, lambda { where("published_at <= ?", Time.zone.now) }
+scope :recent, visible.published.order("published_at desc")
+# WARNING: Do a little more due diligence regarding the moment of query execution. Bates says that the query
+#          isn't executed until the objects are accessed, such as via each. So if you call @articles.each
+#          in the view, _that_ seems to be the moment of query execution. Leverage fragment caching to improve this.
+
+
+# Railscast 203
+
 
 
 
