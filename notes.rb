@@ -4023,8 +4023,6 @@ scope :recent, visible.published.order("published_at desc")
 # Railscast 203
 
 
-
-
 # Railscast 209 Devise
 rails g devise:install
 rails g devise User
