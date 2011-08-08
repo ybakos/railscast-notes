@@ -4054,6 +4054,18 @@ end
 # Note that Bates only scratches the surface, eg, see the scope method.
 
 
+# Railscast 204
+# XSS Protection in Rails 3
+# Rails 3 automatically applies h(). Smart enough to not double-escape (for existing h() calls).
+# raw()
+# html_safe(), html_safe?
+# Two rules of thumb for helpers that return markup.
+# 1) Make sure you escape any user-gen'd content that is returned by the helper.
+# 2) Mark the returning string as html_safe()
+
+
+# Railscast 205
+
 
 # Railscast 209 Devise
 rails g devise:install
