@@ -4065,6 +4065,15 @@ end
 
 
 # Railscast 205
+# Unobtrusive JavaScript
+# Not a whole lot new here if you're already familiar w/ Rails 3.
+# R3 injects JS unobtrusively. Many ajax helpers are deprecated in lieu of :remote => true.
+# Leverages html data attributes.
+# Don't forget to always use the csrf helper.
+
+
+# Railscast 206
+
 
 
 # Railscast 209 Devise
