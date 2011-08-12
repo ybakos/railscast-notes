@@ -4073,6 +4073,115 @@ end
 
 
 # Railscast 206
+# ActionMailer in Rails 3
+# Relies on mail gem instead of tmail gem.
+gem "mail", "2.1.3"
+# config/initializers/setup_mail.rb
+ActionMailer::Base.smtp_settings = {
+  :address              => "smtp.gmail.com",
+  :port                 => 587,
+  :domain               => "railscasts.com",
+  :user_name            => "railscasts",
+  :password             => "secret",
+  :authentication       => "plain",
+  :enable_starttls_auto => true
+}
+ActionMailer::Base.default_url_options[:host] = "localhost:3000" # Otherwise your mailer view url helpers will need to be provided the :host option.
+Mail.register_interceptor(DevelopmentMailInterceptor) if Rails.env.development? # Cool mail library feature.
+# app/mailers/user_mailer.rb
+class UserMailer < ActionMailer::Base
+  default :from => "ryan@railscasts.com"
+  def registration_confirmation(user)
+    @user = user # Instance variable are available in mailer views
+    attachments["rails.png"] = File.read("#{Rails.root}/public/images/rails.png")
+    mail(:to => "#{user.name} <#{user.email}>", :subject => "Registered")
+  end
+end
+# lib/development_mail_interceptor.rb
+class DevelopmentMailInterceptor
+  def self.delivering_email(message)
+    message.subject = "#{message.to} #{message.subject}"
+    message.to = "ryan@railscasts.com"
+  end
+end
+# users_controller.rb
+UserMailer.registration_confirmation(@user).deliver
+
+
+# Railscasts 207
+# Syntax Highlighting
+# Mentions coderay, ultraviolet (with harsh), pygments (with highlight).
+# Mind the performance and/or how you cache the highlighted output. (Coderay is fastest).
+# syntax_benchmark.rb
+require "rubygems"
+require "benchmark"
+require "coderay"
+require "uv"
+path = __FILE__
+content = File.read(__FILE__)
+# run it once to initialize
+CodeRay.scan("print 'hello'", "ruby").div(:css => :class)
+Uv.parse("print 'test'", "xhtml", "ruby", true, "amy")
+Benchmark.bm(11) do |b|
+  b.report("coderay") do
+    50.times { CodeRay.scan(content, "ruby").div(:css => :class) }
+  end
+  b.report("ultraviolet") do
+    50.times { Uv.parse(content, "xhtml", "ruby", true, "amy") }
+  end
+  b.report("pygments") do
+    50.times { `pygmentize -f html "#{path}"` }
+  end
+end
+# If you're using both textile and coderay, you'll want to wrap the shit with a 'notextile' div.
+= textilize(coderay(@article.content))
+# application_helper.rb
+def coderay(text)
+  text.gsub(/\<code( lang="(.+?)")?\>(.+?)\<\/code\>/m) do
+    content_tag("notextile", CodeRay.scan($3, $2).div(:css => :class))
+  end
+end
+# Here's some sample styles...
+.CodeRay {
+  background-color: #232323;
+  border: 1px solid black;
+  font-family: 'Courier New', 'Terminal', monospace;
+  color: #E6E0DB;
+  padding: 3px 5px;
+  overflow: auto;
+  font-size: 12px;
+  margin: 12px 0;
+}
+.CodeRay pre {
+  margin: 0px;
+  padding: 0px;
+}
+.CodeRay .an { color:#E7BE69 }                      /* html attribute */
+.CodeRay .c  { color:#BC9358; font-style: italic; } /* comment */
+.CodeRay .ch { color:#509E4F }                      /* escaped character */
+.CodeRay .cl { color:#FFF }                         /* class */
+.CodeRay .co { color:#FFF }                         /* constant */
+.CodeRay .fl { color:#A4C260 }                      /* float */
+.CodeRay .fu { color:#FFC56D }                      /* function */
+.CodeRay .gv { color:#D0CFFE }                      /* global variable */
+.CodeRay .i  { color:#A4C260 }                      /* integer */
+.CodeRay .il { background:#151515 }                 /* inline code */
+.CodeRay .iv { color:#D0CFFE }                      /* instance variable */
+.CodeRay .pp { color:#E7BE69 }                      /* doctype */
+.CodeRay .r  { color:#CB7832 }                      /* keyword */
+.CodeRay .rx { color:#A4C260 }                      /* regex */
+.CodeRay .s  { color:#A4C260 }                      /* string */
+.CodeRay .sy { color:#6C9CBD }                      /* symbol */
+.CodeRay .ta { color:#E7BE69 }                      /* html tag */
+.CodeRay .pc { color:#6C9CBD }                      /* boolean */
+
+
+# Railscast 208
+
+
+
+
+
 
 
 
