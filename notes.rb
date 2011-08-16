@@ -4175,8 +4175,26 @@ end
 .CodeRay .ta { color:#E7BE69 }                      /* html tag */
 .CodeRay .pc { color:#6C9CBD }                      /* boolean */
 
-
 # Railscast 208
+# ERB Blocks in Rails 3
+# application_helper.rb
+# It's all about capturing the block and returning what you want rendered.
+def admin_area(&block)
+  content = capture(&block)
+  content_tag(:div, content, :class => "admin")
+end
+# or
+def admin_area(&block)
+  content_tag(:div, :class => "admin", &block) if admin?
+end
+# And in your view...
+= admin_area do
+  = link_to "Edit", edit_product_path(@product)
+  = link_to "Destroy", @product, :confirm => "Are you sure?", :method => :delete
+  = link_to "View All", products_path
+
+
+
 
 
 
