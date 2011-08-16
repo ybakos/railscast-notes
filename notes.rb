@@ -4194,26 +4194,48 @@ end
   = link_to "View All", products_path
 
 
-
-
-
-
-
-
-
-
-
-# Railscast 209 Devise
+# Railscast 209
+# Devise
 rails g devise:install
 rails g devise User
 # Gives you the model, migration, routes and view files for the automagic that is Devise.
 # Use rake:routes to see the routes to register, log in, etc.
 
 
-# Railscast 210 Customizing Devise
+# Railscast 210
+# Customizing Devise
 rails g devise:views -e haml
 # See config/initializers/devise.rb
 # See config/locales/devise.en.yml
+
+
+# Railscast 211
+# Validations in Rails 3
+# error_messages_for is deprecated. Want it? See dynamic_form https://github.com/joelmoss/dynamic_form
+Model.validators # returns an array of ActiveModel::Validation objects
+# Want to specify that a field is required? Define your own helper...
+# application_helper.rb
+def mark_required(object, attribute)
+  "*" if object.class.validators_on(attribute).map(&:class).include? ActiveModel::Validations::PresenceValidator
+end
+# And in your view...
+mark_required(@user, :email)
+# But the better way is to modify the builder so label() does that shit.
+# In Rails 3, can use validates() method when you've got multiple validation rules on an attribute.
+validates :email, :presence => true, :uniqueness => true, :email_format => true
+# And define your own validation classes!
+#lib/email_format_validator.rb
+class EmailFormatValidator < ActiveModel::EachValidator
+  def validate_each(object, attribute, value)
+    unless value =~ /^([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$/i
+      object.errors[attribute] << (options[:message] || "is not formatted properly") 
+    end
+  end
+end
+
+
+
+
 
 
 # Railscast 233
