@@ -4234,6 +4234,78 @@ class EmailFormatValidator < ActiveModel::EachValidator
 end
 
 
+# Railscast 212
+# Refactoring with "dynamic delegator"
+# Let's say you've got a clever action that accepts different params you use for an AR finder.
+def index
+  @product = Product.scope
+  @products.where("name like ?", "%" + params[:name] + "%") if params[:name]
+  @products.where("price >= ?", params[:price_gt]) if params[:price_gt]
+  @products.where("price <= ?", params[:price_lt]) if params[:price_lt]
+end
+# Refactored with "dynamic delegator" ...
+# controller
+def index
+  @products = Product.search(params)
+end
+# models/product.rb
+def self.search(params)
+  products = scope_builder
+  products.where("name like ?", "%" + params[:name] + "%") if params[:name]
+  products.where("price >= ?", params[:price_gt]) if params[:price_gt]
+  products.where("price <= ?", params[:price_lt]) if params[:price_lt]
+  products
+end
+def self.scope_builder
+  DynamicDelegator.new(scoped)
+end
+# lib/dynamic_delegator.rb
+class DynamicDelegator < BasicObject
+  def initialize(target)
+    @target = target
+  end
+  def method_missing(*args, &block)
+    result = @target.send(*args, &block)
+    @target = result if result.kind_of? @target.class
+    result
+  end
+end
+# TIP: Ruby 1.9 has a BasicObject class that is handy to extend (instead of Object). BasicObject is a super-bare base class.
+#      To witness this, check out Object.instance_methods vs. BasicObject.instance_methods
+
+
+# Railscast 213
+# Calendars
+# Need a datepicker? Prototype: calendar_date_select. JQuery: UI Datepicker
+# Need a calendar, such as for scheduling? event_calendar (https://github.com/elevation/event_calendar)
+# Just a simple calendar? table_builder (https://github.com/p8/table_builder)
+# Controller:
+def index
+  @articles = Article.find(:all)
+  @date = params[:month] ? Date.parse(params[:month]) : Date.today
+end
+# View:
+<div id="calendar">
+  <h2 id="month">
+    <%= link_to "<", :month => (@date.beginning_of_month-1).strftime("%Y-%m") %>
+    <%=h @date.strftime("%B %Y") %>
+    <%= link_to ">", :month => (@date.end_of_month+1).strftime("%Y-%m") %>
+  </h2>
+  <% calendar_for @articles, :year => @date.year, :month => @date.month do |calendar| %>
+    <%= calendar.head('Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday') %>
+    <% calendar.day(:day_method => :published_on) do |date, articles| %>
+      <%= date.day %>
+      <ul>
+        <% for article in articles %>
+          <li><%= link_to h(article.name), article %></li>
+        <% end %>
+      </ul>
+    <% end %>
+  <% end %>
+</div>
+
+
+# Railscast 214
 
 
 
