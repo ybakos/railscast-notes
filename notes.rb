@@ -4306,6 +4306,11 @@ end
 
 
 # Railscast 214
+# A/B Testing w/ ABingo
+# See the Railscast for an implementation example (the code alone doesn't explain much)
+
+
+# Railscast 215
 
 
 
