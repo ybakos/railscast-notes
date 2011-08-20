@@ -4228,7 +4228,7 @@ validates :email, :presence => true, :uniqueness => true, :email_format => true
 class EmailFormatValidator < ActiveModel::EachValidator
   def validate_each(object, attribute, value)
     unless value =~ /^([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$/i
-      object.errors[attribute] << (options[:message] || "is not formatted properly") 
+      object.errors[attribute] << (options[:message] || "is not formatted properly")
     end
   end
 end
@@ -4311,7 +4311,34 @@ end
 
 
 # Railscast 215
+# Advanced Queries in Rails 3
+# Say you have...
+class Product < AR::Base
+  belongs_to :category
+  scope :discontinued, where(:discontinued => true)
+  scope :cheaper_than, lambda { |price| where("price ?", price) }
+end
+# Let's say the lambda is complex and you should refactor this...
+def self.cheaper_than(price)
+  where("products.price < ?", price) # Disambiguate the table name by using proper prefix, important w/ AR '&' joins
+end
+scope :cheap, cheaper_than(5) # Has to be after the cheaper_than declaration. Oh my heart longs for f() prog'n.
+# Now check this out...
+Category.joins(:products) & Product.cheap
+# Holy shit, instant join at the SQL layer.
+# models/category.rb
+scope :with_cheap_products, joins(:products) & Product.cheap
+# Now check this out...
+p = Product.discontinued.build
+p.discontinued # Proper attribute value per scope condition
+# All this AR magic thanks to arel.
+t = Product.arel_table
+t[:price].eq(2.99)
+t[:name].matches("%catan").to_sql
+Product.where(t[:price].eq(2.99).or(t[:name].matches("%catan")))
 
+
+# Railscast 216
 
 
 
