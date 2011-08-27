@@ -4538,6 +4538,7 @@ config.middleware.use "PDFKit::Middleware", :print_media_type => true
     display: none;
   }
 }
+# If you want an easy way to do .format driven rendering, eg, just send a file, check out wickedpdf.
 
 
 # Railscast 221
