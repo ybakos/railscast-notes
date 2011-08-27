@@ -4432,6 +4432,118 @@ end
   = f.submit "Back", :name => "back_button" unless @order.first_step?
 
 
+# Railscast 218
+# Making Generators in Rails 3
+# References railscasts 58 and 216
+# Rails 3 has a generators generator! Generators are based on Thor, not Rake.
+rails g generator layout
+# By default, extends NamedBase which expects a required name argument. You can extend Rails::Generators::Base instead.
+# lib/generators/layout/layout_generator.rb
+class LayoutGenerator < Rails::Generators::NamedBase
+  source_root File.expand_path('../templates', __FILE__)
+end
+
+# Add args with
+argument :layout_name, :type => :string, :default => "foo"
+# All public methods will be run when the generator is run.
+# Full example:
+# lib/generators/layout/layout_generator.rb
+class LayoutGenerator < Rails::Generators::Base
+  source_root File.expand_path('../templates', __FILE__)
+  argument :layout_name, :type => :string, :default => "application"
+  class_option :stylesheet, :type => :boolean, :default => true, :desc => "Include stylesheet file." # Makes Thor give you the "options" object, gives your gen the "--stylesheet" option
+  def generate_layout
+    copy_file "stylesheet.css", "public/stylesheets/#{file_name}.css" if options.stylesheet? # see class_option above
+    template "layout.html.erb", "app/views/layouts/#{file_name}.html.erb"
+  end
+  private
+  def file_name
+    layout_name.underscore
+  end
+end
+# lib/generators/layout/templates/layout.html.erb
+<html>
+  <head>
+    <title>Untitled</title>
+    <%- if options.stylesheet? -%>
+    <%%= stylesheet_link_tag "<%= file_name %>" %>
+    <%- end -%>
+    <%%= javascript_include_tag :defaults %>
+    <%%= csrf_meta_tag %>
+    <%%= yield(:head) %>
+  </head>
+  <body>
+    <div id="container">
+      <%% flash.each do |name, msg| %>
+        <%%= content_tag :div, msg, :id => "flash_#{name}" %>
+      <%% end %>
+      <%%= yield %>
+    </div>
+  </body>
+</html>
+
+
+# Railscast 219
+# Active Model
+# AR stuff that is not about persistence has been extracted into rails/active_model
+# See rails/active_model/lint.rb to check for conformance to Rails expected model API, like to_key, and shit like that.
+# models/message.rb
+class Message
+  include ActiveModel::Validations
+  include ActiveModel::Conversion
+  extend ActiveModel::Naming
+
+  attr_accessor :name, :email, :content
+
+  validates_presence_of :name
+  validates_format_of :email, :with => /^[-a-z0-9_+\.]+\@([-a-z0-9]+\.)+[a-z0-9]{2,4}$/i
+  validates_length_of :content, :maximum => 500
+
+  def initialize(attributes = {})
+    attributes.each do |name, value|
+      send("#{name}=", value)
+    end
+  end
+
+  def persisted?
+    false
+  end
+end
+
+
+# Railscast 220
+# PDFKit
+# References 153, PDFs with Prawn
+# PDFKit is awesome. Acts as Rack middleware that intercepts the .pdf format requests and renders your pages as pdf.
+# Allows you to utilize markup and css... so it's declarative instead of procedural like Prawn and the like.
+# config/application.rb
+config.middleware.use "PDFKit::Middleware", :print_media_type => true
+# orders/show.html.erb
+<p id="pdf_link"><%= link_to "Download Invoice (PDF)", order_path(@order, :format => "pdf") %></p>
+# application.css
+@media print {
+  body {
+    background-color: #FFF;
+  }
+  #container {
+    width: auto;
+    margin: 0;
+    padding: 0;
+    border: none;
+  }
+  #line_items {
+    page-break-before: always;
+  }
+  #pdf_link {
+    display: none;
+  }
+}
+
+
+# Railscast 221
+
+
+
 
 
 # Railscast 233
