@@ -4542,8 +4542,83 @@ config.middleware.use "PDFKit::Middleware", :print_media_type => true
 
 
 # Railscast 221
+# Subdomains in Rails 3
+# References railscast 123.
+# See lch.me and smakaho.st for free wildcard domains that point to 127.0.0.1 (might not be effective when hosting multiple apps locally w/ passenger)
+# routes.rb
+match '/' => 'blogs#show', :constraints => { :subdomain => /.+/ }
+# Want more flexibility?
+constraints(Subdomain) do
+  match '/' => 'blogs#show'
+end
+# lib/subdomain.rb
+class Subdomain
+  def self.matches?(request) # This method is expected by the router.
+    request.subdomain.present? && request.subdomain != "www"
+  end
+end
+# Tip: Rails 3 offers present? which is the opposite of blank?
+# application_controller.rb
+include UrlHelper
+# app/helpers/url_helper.rb
+module UrlHelper
+  def with_subdomain(subdomain)
+    subdomain = (subdomain || "")
+    subdomain += "." unless subdomain.empty?
+    [subdomain, request.domain, request.port_string].join
+  end
+
+  def url_for(options = nil)
+    if options.kind_of?(Hash) && options.has_key?(:subdomain)
+      options[:host] = with_subdomain(options.delete(:subdomain))
+    end
+    super
+  end
+end
+# In your views...
+= link_to blog.name, root_url(:subdomain => blog.subdomain)
+= link_to "All Blogs", root_url(:subdomain => false
+
+# config/initializers/session_store.rb
+Rails.application.config.session_store :cookie_store, :key => '_blogs_session', :domain => :all
+# change top level domain size
+request.domain(2)
+request.subdomain(2)
+Rails.application.config.session_store :cookie_store, :key => '_blogs_session', :domain => "example.co.uk"
 
 
+# Railscast 222
+# Rack in Rails 3 (Routing)
+# References railscast 203
+# You know how your routes have strings like "home#index" ? These become things like HomeController.action(:index) which returns a rack app.
+root :to => proc { |env| [200, {}, ["welcome"]]} # See, simple rack app.
+# You could even embed any Rack app... such as sinatra:
+#lib/home_app.rb
+class HomeApp < Sinatra::Base
+  get "/" do
+    "Hello from Sinatra!"
+  end
+end
+# routes
+root :to => HomeApp
+# Rails 3 really embraces Rack...
+match "/about" => redirect("/aboutus")
+match "/aboutus" => "info#about"
+resources :products
+match "/p/:id" => redirect("/products/%{id}")) # Use percent sign for interpolation
+# Now about metal in the new Rails 3 way...
+match "/processes" => ProcessApp.action(:index)
+# lib/processes_app.rb
+class ProcessesApp < ActionController::Metal # Extending Metal lets you get a little more fancy.
+  include ActionController::Rendering # Lets your metal render view templates
+
+  append_view_path "#{Rails.root}/app/views"
+
+  def index
+    @processes = `ps -axcr -o "pid,pcpu,pmem,time,comm"`
+    render # Need to do this explicitly.
+  end
+end
 
 
 
