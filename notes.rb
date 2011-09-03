@@ -4621,6 +4621,54 @@ class ProcessesApp < ActionController::Metal # Extending Metal lets you get a li
 end
 
 
+# Railscast 223
+# Charts
+# Pretty vendor specific, demonstrates Highcharts. See cast for code.
+
+
+# Railscast 224
+# Controllers in Rails 3
+# Don't forget, redirect_to accepts a :flash hash
+#config/application.rb
+config.filter_parameters += [:password]
+# products_controller
+redirect_to @product, :notice => "Successfully created product."
+redirect_to [:edit, @product] # Cool alternative to edit_product_path(@product), also available in Rails 2
+redirect_to [@category, :edit, @product] # Nested resource routes shortcut
+cookies.permanent[:last_product_id] = @product.id # Easy to create permanent cookies
+cookies.permanent[:foo].signed # Easty encryted cookies, yay
+# in class
+respond_to :html, :xml # Great way to dry out responder blocks in all your actions. Use respond_with in the action
+# in action
+respond_with(@products) # This is intelligent enough to handle things like create actions (auto-generates redirect if errors!)
+# GET: looks for view matching mime-type of request extension/format
+# POST/PUT: same as get, but on persistence errors, will redirect for html or send xml response
+respond_with(@product, :location => products_url) # Customize the redirect when successful
+respond_with(@product, :responder => MyResponder) # Sweet, define your own responder classes. /rails/actionpack/lib/action_controller/metal/responder.rb for example API
+respond_with(@product) do |format|  # You can override format-specic behavior, just like the old respond_to blocks.
+  format.xml { render :text => "I'm XML!" }
+end
+# See http://github.com/rails/rails/blob/master/actionpack/lib/action_controller/metal/responder.rb
+# for example of Responder API for your own custom Responder classes.
+
+
+# Railscast 225
+# Upgrading to Rails 3 part I
+# Upgrade to latest R2.x and latest version of gem dependencies.
+# Check your test suite of course. Note deprecation notices and address them.
+# Try running the rails_update plugin stuff.
+rake rails:upgrade:backup # backup your R2 shit
+rails new . # use 'd' to see the difference between overwritable files when prompted
+# Start with routes
+# Then environment.rb (most of that shit like TZ, session belongs in the new application.rb)
+# Move config.gem declarations to Gemfile, then install
+# Try running the app, see what gems break your app
+# Lastly, run rails:upgrade:check to see what else you need to fix.
+
+
+# Railscast 226
+
+
 
 # Railscast 233
 # Janrain Engage with Devise
