@@ -4667,6 +4667,11 @@ rails new . # use 'd' to see the difference between overwritable files when prom
 
 
 # Railscast 226
+# Upgrading to Rails 3 part II
+# Bates says R3rc doesn't auto-load .rb files in lib. I don't know if that's the case any more.
+# Takes a rather brute-force approach to upgrading: "play around and see what's broken"
+# Of course, note the new AR syntax, ERB syntax styles, etc.
+rails:upgrade:check
 
 
 
