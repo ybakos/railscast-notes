@@ -4674,6 +4674,19 @@ rails new . # use 'd' to see the difference between overwritable files when prom
 rails:upgrade:check
 
 
+# Railscast 227
+# Upgrading to Rails 3 part III
+# This episode primarily focuses on the view layer.
+# content_for() now returns stuff, so you can use it in layouts like so:
+= content_for?(:side) ? yield(:side) : render(:partial => 'shared/side')
+# Don't forget that js embedding for delete links in unobtrusive.
+# Include the github.com/jquery-ujs/src/rails.js file if you're using jQ. (I don't know if this is relevant any more.)
+# Be sure to remember your csrf_meta_tag helper call.
+
+
+# Railscast 228
+# Sortable Table Columns
+
 
 # Railscast 233
 # Janrain Engage with Devise
