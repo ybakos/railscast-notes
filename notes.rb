@@ -4686,6 +4686,86 @@ rails:upgrade:check
 
 # Railscast 228
 # Sortable Table Columns
+# A demonstration of manually implementing sortable columns with request params.
+# Demonstrates avoiding assigning "default" param value directly in params hash, instead, abstract this to a private controller method, eg:
+def sort_column
+  params[:sort] || "name"
+end
+# And some simple injection protection:
+def sort_direction
+  %w[asc desc].include?(params[:direction]) ? params[:direction] : "asc"
+end
+# And lastly, generating the css classes dynamically per the sort order, such that it can be styled.
+
+
+# Railscast 229
+# Polling for Changes
+# Scenario: reloading comments automatically, periodically, via polling (as opposed to comet)
+gem 'jquery-rails' # not sure if this is relevant any more for R3.1
+rails g jquery:install
+# Uses setTimeout (also see setInterval)
+# jQ has $.getScript() which retrieves server-side generated js and executes it.
+# Bates chooses to have the server generate everything, rather than receive a JSON request and then format it.
+# Leverages the HTML5 data-id attribute to pass the article id to JS easily, eg:
+var article_id = $("#article").attr("data-id");
+# Bates incorporates the comments' created_at.to_i timestamp which is used as an "after" parameter.
+# As such, not _all_ comments are retrieved for every ajax request. only those since the "data-time" attribute of the last comment div.
+# Uses some js-driven div counting to calculate number of comments, rather than using a server-side count.
+# application.js
+$(function() {
+  if ($("#comments").length > 0) {
+    setTimeout(updateComments, 10000);
+  }
+});
+
+function updateComments () {
+  var article_id = $("#article").attr("data-id");
+  if ($(".comment").length > 0) {
+    var after = $(".comment:last-child").attr("data-time");
+  } else {
+    var after = "0";
+  }
+  $.getScript("/comments.js?article_id=" + article_id + "&after=" + after)
+  setTimeout(updateComments, 10000);
+}
+# index.js.erb
+unless @comments.empty?
+  $("#comments").append("<%=raw escape_javascript(render(@comments)) %>");
+  $("#article h2").text($(".comment").length + " comments");
+
+
+# Railscast 230
+# Inherited Resources
+# Got a ton of super-generic Resource Controllers?
+gem 'inherited_resources'
+# And you magically get...
+class FooController < InheritedResources::Base; end
+# To customize, simply override/define the controller action, with some sugar, eg:
+def create
+  create! { products_path }
+end
+# And you can declare some more respond_to's...
+respond_to :html, :xml
+# Got nested routes?
+belongs_to :product # mimics AR syntax
+# Want to limit actions?
+actions :index, :new, :create
+# Designed to work with has_scope, which adds "controller filters" based on model named_scopes.
+gem 'has_scope'
+# Now in the controller you can pass scope parameters in the url
+has_scope :limit, :default => 0
+# which lets you http://...products?limit=5
+# and inherited_resources handles the magic.
+# To customize the flash messages used, use the i18 file (en.yml)
+en:
+  flash:
+    actions:
+      create:
+        notice: "Your %{resource_name} has been created!"
+
+
+# Railscast 231
+
 
 
 # Railscast 233
