@@ -4765,6 +4765,24 @@ en:
 
 
 # Railscast 231
+# Routing Walkthrough I
+# Explores the implementation of routing.
+# Rails:: classes are generally in the railties dir (railties/lib/rails)
+MyApp::Application.routes # returns an ActionDispatch::Routing::RouteSet object
+# Uses a Mapper instance and instance_exec to give our routes file the sugar we're accustomed to.
+# Reveals some shorthand, eg:
+match 'products/cool', :to => 'products#cool', :as => :products_cool
+match 'products/cool' # shorthand, automatically gives us the above :to and :as options
+# In rails source, an 'app' variable is usually a Rack app instance.
+# Demonstrates an interesting overriding of new, for perf reasons.
+# The :to option can be assigned a Rack application via a proc!
+# And notice that
+ProductsController.action("index")
+# Returns a Rack app. So under the hood,
+:to => 'products#cool' # is really ProductsController.action("cool")
+
+
+# Railscast 232
 
 
 
