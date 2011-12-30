@@ -4783,7 +4783,18 @@ ProductsController.action("index")
 
 
 # Railscast 232
-
+# Routing Walkthrough II
+# actionpack/action_dispatch/routing/
+# This episode focuses on Mapper, from which all routes.rb method calls originate.
+# When you:
+match 'products', :to => redirect("/items")
+# The mapper's redirect method returns a rack app, which is a valid :to value.
+# And, as shorthand:
+match 'products' => redirect("/items")
+# Notice the interesting behavior of super in Ruby. The Mapper class includes a bunch of modules at the end of its definition.
+# A call to super will not look at the superclass method first, it actually looks up the chain of includes and finds the
+# first definition of the method it finds. I think. In older Rails source, they used alias_method_chain instead.
+# Bates spends the latter half of the cast exploring the scoping of routing methods and how they work under the hood.
 
 
 # Railscast 233
@@ -4792,6 +4803,8 @@ ProductsController.action("index")
 # See rpx_now, authlogic_rpx, devise_rpx_connectable
 # You can embed the rpx form in an iframe on your site for more visual integration.
 # See the railscast starting at about 1/2 way through.
+
+
 
 
 
