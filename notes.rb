@@ -4805,6 +4805,28 @@ match 'products' => redirect("/items")
 # See the railscast starting at about 1/2 way through.
 
 
+# Railscast 234
+# Simple Form (a gem for generating form views, similar to Formtastic)
+# Seems SF is a little more lightweight, more customizable/extensible (?)
+rails g simple_form:install
+= simple_form_for @product do |f|
+  = f.error_messages
+  = f.input :name
+  = f.input :price, :hint => "prices should be in USD"
+  = f.input :released_on
+  = f.association :category, :include_blank => false
+  = f.input :rating, :collection => 1..5, :as => :radio
+  = f.input :discontinued
+  = f.button :submit
+# Smart enough to inspect the attribute types and display appropriate form widgets.
+# But you can ovverride the defaults w/ options (see above)
+# See initializers/simple_form.rb for some general config.
+# See locales/simple_form.en.yml for i18m
+# Remember, in R3, you can override any of Rails scaffold templates simply by making your own, eg:
+# lib/templates/erb/scaffold/_form.html.erb
+
+
+# Railscast 235
 
 
 
