@@ -4826,10 +4826,6 @@ rails g simple_form:install
 # lib/templates/erb/scaffold/_form.html.erb
 
 
-# Railscast 235
-
-
-
 # Railscast 235 OmniAuth Part I
 # Basically a suite of middleware that allows you to authenticate against remote services like twitter.
 # Works with Devise.
@@ -4839,6 +4835,45 @@ rails g simple_form:install
 # Railscast 236 OmniAuth Part II
 # Demonstrates OmniAuth integration with Devise.
 # Easy to add services, but lots of self-written bootstrapping seems necessary. Long cast.
+
+
+# Railscast 237
+# Dynamic attr_accessible
+# Demonstrates using attr_accessible based on user permissions (via Rails 3)
+# Say you've got one attribute that is accessible only to admins. You could:
+# - hide the form field if admin?, but this is weak client-side crap
+# - remove the parameter from the params hash in the controllers, eg:
+params[:article].delete(:foo) unless admin?
+#   but then you've got to remember to do this in every relevant controller action
+# Note that attr_accessible is now part of ActiveModel.
+# This technique is based on overriding mass_assignment_authorizer, which returns a special attribute "whitelist" object
+# Override mass_assignment_authorizer for all AR subclasses
+# config/initializers/accessible_attributes.rb
+class ActiveRecord::Base
+  attr_accessible
+  attr_accessor :accessible
+  
+  private
+  
+  def mass_assignment_authorizer
+    if accessible == :all
+      self.class.protected_attributes
+    else
+      super + (accessible || [])
+    end
+  end
+end
+# And in your controllers, merely:
+@article.accessible = :all if admin?
+# But be sure to do this before any mass assignment operations (and, refactor the repetition out of each action, perhaps w/ a before_filter)
+
+# Note that older API docs are also available by appending version number like so: http://api.rubyonrails.org/v2.3.11
+
+
+# Railscast 238
+
+
+
 
 
 # Railscast 241 Simple OmniAuth
