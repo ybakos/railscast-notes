@@ -4852,9 +4852,9 @@ params[:article].delete(:foo) unless admin?
 class ActiveRecord::Base
   attr_accessible
   attr_accessor :accessible
-  
+
   private
-  
+
   def mass_assignment_authorizer
     if accessible == :all
       self.class.protected_attributes
@@ -4871,7 +4871,47 @@ end
 
 
 # Railscast 238
+# Mongoid (alternative to MongoMapper)
+gem 'mongoid', '2.0.0.beta.19'
+gem 'bson_ext'
+# Remember, schemaless, so no migrations.
+# article.rb with relationships and datatype options
+class Article
+  include Mongoid::Document
+  field :name
+  field :content
+  field :published_on, :type => Date
+  validates_presence_of :name
+  embeds_many :comments
+  referenced_in :author
+end
+# comment.rb with "embedded_in" relationship
+class Comment
+  include Mongoid::Document
+  field :name
+  field :content
+  embedded_in :article, :inverse_of => :comments
+end
+# author.rb with "references" relationship
+class Author
+  include Mongoid::Document
+  field :name
+  key :name
+  references_many :articles
+end
+# Default :type option is String
+# Mongoid uses ActiveModel, so you get your validations, etc.
+# "embeds" declarations result in the embedee to be included in the embedder's document
+# "references" is like an FK, uses separate document
+# Which one to use? Well, think of model independence. eg, Above, we only ever look at comments withing
+# the context of an Article, so an "embedded association" is used.
+# -- note to use nested routes for embedded model paths, makes sense.
+# -- and the nested create/builders, like in AR:
+@comment = @article.comments.create!(params[:comment])
+# Note that the :key option lets you map a field to the "id" -- kinda gives you automatic "permalink" style URLs
 
+
+# Railscast 239
 
 
 
