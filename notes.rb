@@ -4912,7 +4912,28 @@ end
 
 
 # Railscast 239
+# ActiveRecord::Relation
+# Explores some of the internals of AR in Rails 3.
+Task.where(:foo => true) # Returns an ActiveRecord::Relation object (not an array)
+# active_record/relation/query_methods.rb is where the query methods lie (where, order, etc)
+# each of those query methods returns a Relation. But what about the initial call in the chain? (eg, Task.where)
+# AR Base delegates query methods to scoped().
+# active_record/named_scope.rb
+# scoped() calls relation()
+# active_record/base.rb defines relation(), which returns a Relation object.
+# This uses an Arel::Table.
+# TIP: Handy common regex for searching Ruby source for method definitions: delegate.+ :where
+Task.where(:foo => true) # displays an array of Task objects in irb, but don't be fooled.
+# inspect is overridden and calls to_a.inspect.
+# to_a uses lazy loading and uses find_by_sql(arel.to_sql) to actually executed the query.
+# arel() is in query_methods.rb
+# See build_arel() that contains most of the query drama.
+# Browse query_methods.rb for some little known finders, like reorder()
+# See spawn_methods.rb for things like merge() or only().
+# Bates encourages us to browse the Rails 3 source and try things out on the console (as well as learning more about Rails and how to leverage it best).
 
+
+# Railscast 240
 
 
 
