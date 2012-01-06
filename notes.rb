@@ -4934,12 +4934,53 @@ Task.where(:foo => true) # displays an array of Task objects in irb, but don't b
 
 
 # Railscast 240
-
+# Search, Sort, Paginate with AJAX
+# Starts with code from 228, sortable table columns (w/o ajax) and 37, simple search.
+# If you want to create a method and then chain query methods upon it, be sure it returns a Relation / scope.
+def all_cool
+  scoped
+end
+# products_controller.rb
+def index
+  @products = Product.search(params[:search]).order(sort_column + " " + sort_direction).paginate(:per_page => 5, :page => params[:page])
+end
+# models/product.rb
+def self.search(search)
+  if search
+    where('name LIKE ?', "%#{search}%")
+  else
+    scoped
+  end
+end
+# Main view
+= form_tag products_path, etc # search form
+<div id="products"><%= render 'products' %></div>
+# products/_products.html.erb
+... product table ...
+= hidden_field_tag :direction, params[:direction]
+= hidden_field_tag :sort, params[:sort]
+= will_paginate @products
+# And ultimately, for the ajax...
+# products/index.js.erb
+$("#products").html("<%= escape_javascript(render("products")) %>");
+# application.js
+$(function() {
+  $("#products th a, #products .pagination a").live("click", function() {
+    $.getScript(this.href); # calls /products/index.js
+    return false;
+  });
+  $("#products_search input").keyup(function() {
+    $.get($("#products_search").attr("action"), $("#products_search").serialize(), null, "script");
+    return false;
+  });
+});
 
 
 # Railscast 241 Simple OmniAuth
 # Demonstrates using OmniAuth on its own, which relies on 3rd party auth services like twitter.
 
+
+# Railscast 242
 
 
 # Railscast 265 Rails 3.1 Overview
