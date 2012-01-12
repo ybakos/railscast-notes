@@ -4981,6 +4981,195 @@ $(function() {
 
 
 # Railscast 242
+# Thor
+# Pains of rails w/ rake: passing args as env vars (sucks) and tasks are scoped to the application
+# Rails3 generators use Thor, so its an R3 dependency
+# Demonstrates copying config/examples/ stuff to proper locations (eg, db config)
+thor help
+# Simple script:
+class Setup < Thor
+  desc "config [NAME]", "copy configuration files"
+  def config
+    puts "running config"
+  end
+end
+# Run via...
+thor setup:config
+# See tasks with...
+thor list # kind of like rake -T
+# Say you want a "force" option...
+class Setup < Thor
+  desc "config [NAME]", "copy configuration files"
+  method_options :force => :boolean
+  def config
+    puts "hello" if options[:force]
+  end
+end
+# Use with...
+thor setup:config --force
+# This makes options[:force] == true.
+# Command line arguments will be passed as arguments to the method, such as:
+thor setup:config private.yml
+# Which is passed to config
+def config(name)
+end
+# If you want your script to be globally available, then "install" it...
+thor install lib/tasks/setup.thor
+# Complete script:
+class Setup < Thor
+  desc "config [NAME]", "copy configuration files"
+  method_options :force => :boolean
+  def config(name = "*")
+    Dir["config/examples/#{name}"].each do |source|
+      destination = "config/#{File.basename(source)}"
+      FileUtils.rm(destination) if options[:force] && File.exist?(destination)
+      if File.exist?(destination)
+        puts "Skipping #{destination} because it already exists"
+      else
+        puts "Generating #{destination}"
+        FileUtils.cp(source, destination)
+      end
+    end
+  end
+
+  desc "populate", "generate records"
+  method_options :count => 10 # default option value
+  def populate
+    require File.expand_path('config/environment.rb') # This makes Thor aware of your Rails env!
+    options[:count].times do |num|
+      puts "Generating article #{num}"
+      Article.create!(:name => "Article #{num}")
+    end
+  end
+end
+# Run populate with...
+thor setup:populate
+thor setup:populate --count 5
+
+
+# Railscast 243
+# Beanstalkd and Stalker
+# Consider the game go vs go, where the computer takes time to "think" to make its move.
+# AI is moved to a bg process, using beanstalk.
+beanstalkd -d
+gem install beanstalk-client
+# On the server, create a pool, add it to the queue.
+beanstalk.put
+# On the client
+beanstalk.reserve # Will not return until a job is in the queue and returns. I think.
+# A nicer alternative wrapper to the beanstalk-client is stalker
+gem install stalker
+# In your app...
+Stalker.enqueue("city.fetch_name", :id => @city.id)
+# And implement a stalker job...
+#jobs.rb
+require File.expand_path("../environment", __FILE__) # Necessary, as stalker is not Rails-specific. Which can be a problem b/c this is requiring the whole Rails env for every job.
+job "city.fetch_name" do |args|
+  City.find(args["id"]).fetch_name
+end
+# A raw job...
+# config/jobs.rb without Rails
+require "sqlite3"
+require "json"
+require "net/http"
+
+RAILS_ENV = ENV["RAILS_ENV"] || "development"
+
+db = SQLite3::Database.new(File.expand_path("../../db/#{RAILS_ENV}.sqlite3", __FILE__))
+
+job "city.fetch_name" do |args|
+  zip = db.get_first_value("select zip_code from cities where id=?", args["id"])
+  url = "http://ws.geonames.org/postalCodeLookupJSON?postalcode=#{zip}&country=US"
+  json = Net::HTTP.get_response(URI.parse(url)).body
+  name = JSON.parse(json)["postalcodes"].first["placeName"]
+  db.execute("update cities set name=? where id=?", name, args["id"])
+end
+
+error do |exception|
+  # ...
+end
+# What about errors in job execution. Stalker with call th error message (shown above).
+# To re-run a task, you must kick it...
+telnet localhost 11300 # connect to beanstalkd
+kick 10
+# What about monitoring? Bates suggests using god.
+#run with: god -c config/god.rb
+RAILS_ROOT = File.expand_path("../..", __FILE__)
+
+God.watch do |w|
+  w.name = "anycity-worker"
+  w.interval = 30.seconds
+  w.env = {"RAILS_ENV" => "production"}
+  w.start = "/usr/bin/stalk #{RAILS_ROOT}/config/jobs.rb"
+  w.log = "#{RAILS_ROOT}/log/stalker.log"
+
+  w.start_if do |start|
+    start.condition(:process_running) do |c|
+      c.running = false
+    end
+  end
+
+  w.restart_if do |restart|
+    restart.condition(:memory_usage) do |c|
+      c.above = 50.megabytes
+      c.times = [3, 5] # 3 out of 5 intervals
+    end
+
+    restart.condition(:cpu_usage) do |c|
+      c.above = 50.percent
+      c.times = 5
+    end
+  end
+
+  w.lifecycle do |on|
+    on.condition(:flapping) do |c|
+      c.to_state = [:start, :restart]
+      c.times = 5
+      c.within = 5.minute
+      c.transition = :unmonitored
+      c.retry_in = 10.minutes
+      c.retry_times = 5
+      c.retry_within = 2.hours
+    end
+  end
+end
+# Note that by default beanstalk isn't persistent, so use -b binlogpath.
+
+
+# Railscast 244
+# Gravatar
+# Lots of plugins, but is it worth it? You just need the gravatar url.
+# application_helper.rb
+def avatar_url(user)
+  if user.avatar_url.present?
+    user.avatar_url
+  else
+    default_url = "#{root_url}images/guest.png"
+    gravatar_id = Digest::MD5.hexdigest(user.email.downcase)
+    "http://gravatar.com/avatar/#{gravatar_id}.png?s=48&d=#{CGI.escape(default_url)}"
+  end
+end
+# See http://en.gravatar.com/site/implement/images/
+
+
+# Railscast 245
+# Creating a new gem with bundler
+# References #135 (echoe) and #183 (jeweler)
+# It's all about managing the gemspec file, which isn't that bad once its created.
+# Create the gemspec file with bundler.
+# Create a dir with a skeletal git repo for a new gem.
+bundle gem lorem
+# Edit your gemspec file, implemnt your gem, then build and publish...
+gem build lorem.gemspec
+gem push lorem-0.0.1.gem
+# Note that the Gemfile will call gemspec, which uses the gemspec file for dependencies. (eg, add_development_dependency('foo') )
+rake release # creates tag, publishes gem.
+# What about existing gems if you want to use the bundler-style workflow for gem creation?
+# Copy over Gemfile, the gemspec file, and the Rakefile
+
+
+# Railscast 246
+
 
 
 # Railscast 265 Rails 3.1 Overview
