@@ -5169,6 +5169,15 @@ rake release # creates tag, publishes gem.
 
 
 # Railscast 246
+# AJAX History State
+# See https://github.com/blog/760-the-tree-slider
+# See https://developer.mozilla.org/en/DOM/Manipulating_the_browser_history
+# history.pushState()
+# Notice of history.replaceState() as well (illustrated by the search form event 'bug')
+# Beware: only latest FF and Chrome as of this writing, so don't forget to wrap this feature in an if block to test the browser.
+
+
+# Railscast 247
 
 
 
