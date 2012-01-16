@@ -5178,6 +5178,29 @@ rake release # creates tag, publishes gem.
 
 
 # Railscast 247
+# Offline apps, part 1
+# Refers to 199 "Mobile Devices" and Bates specifically is demonstrating an offline app only for mobile agents.
+# See "Dive into HTML5": http://diveintohtml5.info/offline.html
+# See rack-offline gem: http://github.com/wycats/rack-offline
+# Starts with the html5 html element's manifest attribute.
+# The rack-offline gem helps do the heavy lifting for creating the cache-manifest.
+# Keep in mind that in production, the cache-manifest sha only changes when any of the cached files change; in dev mode, it will change per request (which is what you want).
+# config/environments/development.rb
+config.cache_classes = true # to temporarily simulate production
+# Problem: Rails cache-busting querystring can interfere with extra assets like css, js, images, etc.
+# config/application.rb
+ENV["RAILS_ASSET_ID"] = "" # disable timestamps at end of asset files for offline browsing
+# Gotcha: even when online, changes to the app won't be reflected immediately in the client.
+# - cached version is used first immediately, then in the background checks the cache-manifest for updates.
+# - eg, a subsequent reload (twice) is necessary when working in dev
+# Gotcha: file path changes can be annoying (poor error messages regarding cache-manifest changes)
+# - workaround: JS event listening: window.applicationCache.bind("error", function() { alert("foo");}) etc.
+#               (and restart the server in order to use this js)
+# For displaying new data that's posted to the server (in production), we need to... (see next episode)
+
+
+# Railscast 248
+
 
 
 
