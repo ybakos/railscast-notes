@@ -5200,7 +5200,65 @@ ENV["RAILS_ASSET_ID"] = "" # disable timestamps at end of asset files for offlin
 
 
 # Railscast 248
+# Offline apps part 2
+# Posting data from a cached page's form will render the server's response and display the new dynamic data.
+# However, subsequent requests will not show the latest version from the server.
+# One approach is to move the cached data from the cache-manifest via JS.
+# See jquery-tmpl (https://github.com/jquery/jquery-tmpl) to ease markup generation.
+<ol>
+  <script ... id="item_template">
+    <li>${item.name}</li>
+  </script>
+</ol>
+# And in the JS junk drawer:
+# application.js
+$(function() {
+  if ($.support.localStorage) {
+    $(window.applicationCache).bind("error", function() {
+      console.log("There was an error when loading the cache manifest.");
+    });
+    if (!localStorage["pendingItems"]) {
+      localStorage["pendingItems"] = JSON.stringify([]);
+    }
+    $.retrieveJSON("/items.json", function(data) {
+      var pendingItems = $.parseJSON(localStorage["pendingItems"]);
+      $("#items").html($("#item_template").tmpl(data.concat(pendingItems)));
+    });
+    $("#new_item").submit(function(e) {
+      var pendingItems = $.parseJSON(localStorage["pendingItems"]);
+      var item = {[data]($(this).serialize(),) [item]({"name":$("#item_name").val()}};)
+      $("#item_template").tmpl(item).appendTo("#items");
+      pendingItems.push(item);
+      localStorage["pendingItems"] = JSON.stringify(pendingItems)
+      $("#item_name").val("");
+      sendPending();
+      e.preventDefault();
+    });
+    function sendPending() {
+      if (window.navigator.onLine) {
+        var pendingItems = $.parseJSON(localStorage["pendingItems"]);
+        if (pendingItems.length > 0) {
+          var item = pendingItems[0];
+          $.post("/items", item.data, function(data) {
+            var pendingItems = $.parseJSON(localStorage["pendingItems"]);
+            pendingItems.shift();
+            localStorage["pendingItems"] = JSON.stringify(pendingItems)
+            setTimeout(sendPending, 100);
+          });
+        }
+      }
+    }
+    sendPending();
+    $(window).bind("online", sendPending);
+  } else {
+    alert("Try a different browser.");
+  }
+});
+# Use jquery-offline to easily store server-generated JSON data locally.
+# We also want submissions, when offline, to eventually submit the data _to_ the server once back online. See sendPending() and $("#new_item").submit(function(e) above.
 
+
+# Railscast 249
 
 
 
