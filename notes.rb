@@ -5259,6 +5259,40 @@ $(function() {
 
 
 # Railscast 249
+# Notifications in Rails 3
+# See http://api.rubyonrails.org/classes/ActiveSupport/Notifications.html
+# While RPM and such are fine for analyzing the app, R3 ActiveSupport has a Notifications API that we can bind to events.
+# Simple exploratory demo:
+# config/initializers/notifications.rb
+ActiveSupport::Notifications.subscribe  do |name, start, finish, id, payload|
+  Rails.logger.debug(["Notification: ", name, start, finish, id, payload].join(" "))
+end
+# Generate a request, and check out the log. Lots of potential notifications!
+# To select a particular notification, pass the name of the notification as a string/regex to subscribe().
+# The PageRequest object below is an arbitrary AR model that Bates is using to store some data in the db.
+# config/initializers/notifications.rb
+ActiveSupport::Notifications.subscribe "process_action.action_controller" do |name, start, finish, id, payload|
+  PageRequest.create! do |page_request|
+    page_request.path = payload[:path]
+    page_request.page_duration = (finish - start) * 1000
+    page_request.view_duration = payload[:view_runtime]
+    page_request.db_duration = payload[:db_runtime]
+  end
+end
+# Note that you can create your own notifications too! Eg, for logging search terms...
+# Given a Product#search method, just add...
+ActiveSupport::Notifications.instrument("products.search", :search => search)
+# ... in the body of the method.
+# And just implement a handler for the custom notification...
+# config/initializers/notifications.rb
+ActiveSupport::Notifications.subscribe "products.search" do |name, start, finish, id, payload|
+  Rails.logger.debug "SEARCH: #{payload[:search]}"
+end
+# Note that notifications can be abused -- they're primarily for internal event logging/recording/metrics, etc.
+
+
+# Railscast 250
+
 
 
 
