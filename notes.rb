@@ -5292,7 +5292,13 @@ end
 
 
 # Railscast 250
+# Authentication from Scratch
+# Not much new here. All devs should implement their own user authentication scheme at least once.
+# Bates implementation uses the UserSession and User model approach, with Bcrypt gem (bcrypt-ruby) for encrypting passwords (with salt).
+# Note that Bates' nigfty-generators gem has an auth generator.
 
+
+# Railscast 251
 
 
 
