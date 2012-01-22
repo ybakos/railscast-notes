@@ -5299,6 +5299,38 @@ end
 
 
 # Railscast 251
+# Metawhere and metasearch
+# Illustration of a really nice gem that gives us lots of sugar for AR finders.
+# Note that Bates is using hirb for formatting console output
+Product.where(:price.lt => 5)
+Product.where({:price.lt => 5} | {:name.matches => "%video%"})
+Product.order(:released_at.desc)
+MetaWhere.operator_overload!
+Product.where(:price < 5)
+# Metasearch abstracts away the usual work necessary for searching by model attribute values.
+# Metasearch also gives us "sort by" links, neato.
+# Note that this opens up some vulnerabilities -- see the attr_searchable and assoc_searchabel macros.
+# products_controller.rb
+def index
+  @search = Product.search(params[:search])
+  @products = @search.all
+end
+# View...
+= form_for @search do |f|
+  = f.label :name_contains
+  = f.text_field :name_contains
+  = f.label :price_gte, "Price ranges from"
+  = f.text_field :price_gte, :size => 8
+  = f.label :price_lte, "to"
+  = f.text_field :price_lte, :size => 8
+  = f.submit "Search"
+%p Sort by:
+  = sort_link @search, :name
+  = sort_link @search, :price
+  = sort_link @search, :released_at
+
+
+# Railscast 252
 
 
 
