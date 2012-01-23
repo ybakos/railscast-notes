@@ -5331,6 +5331,21 @@ end
 
 
 # Railscast 252
+# Metrics, metrics, metrics
+# Refers to 166, metric_fu. And Caliper was great, but disappeared.
+# metrical gem wraps metric_fu
+# See the metric_fu REEK output.
+# metrical checks for a config file in app root:
+# .metrics
+MetricFu::Configuration.run do |config|
+  config.metrics -= [:rcov]
+end
+# For coverage, try simplecov.
+# Try out the rails_best_practices gem
+# Take all this shit with a grain of salt -- use them as hints to improve your code.
+
+
+# Railscast 253
 
 
 
