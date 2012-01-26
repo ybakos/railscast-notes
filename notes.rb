@@ -5382,6 +5382,27 @@ end
 
 
 # Railscast 254
+# Pagination with Kaminari.
+# Whoa, a challenger to will_paginate? Bates mentions the temporary will_paginate incompatibility w/ Rails 3. (May no longer be relevant.)
+# Kaminari gives us a nice page() scope.
+@products = Product.order("name").page(params[:page]).per(5) # Default 'per' is 25.
+# In the view...
+= paginate @products
+# Nice control over pagination control display via i18n locales.
+# config/locales/en.yml
+en:
+  hello: "Hello world"
+  views:
+    pagination:
+      previous: "&lt; Previous"
+      next: "Next &gt;"
+      truncate: "..."
+# And in the view, you can use those defined strings...
+= raw(t 'views.pagination.previous')
+# Of interest: Kaminari uses the html5 nav tag.
+# Note that Kaminari is an engine, so we can override the views to customize it's look.
+rails g kaminari:views
+# Themes are available: https://github.com/amatsuda/kaminari_themes
 
 
 
