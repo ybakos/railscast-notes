@@ -5346,6 +5346,42 @@ end
 
 
 # Railscast 253
+# Carrierwave uploads
+rails g uploader image # generates the ImageUploader class
+rails g migration add_image_to_paintings image:string
+rake db:migrate
+# models/painting.rb
+class Painting < ActiveRecord::Base
+  attr_accessible :gallery_id, :name, :image, :remote_image_url
+  belongs_to :gallery
+  mount_uploader :image, ImageUploader
+end
+# Carrierwave uses "uploader" classes to encapsulate file attachments.
+# app/uploaders/image_uploader.rb
+class ImageUploader < CarrierWave::Uploader::Base
+  include CarrierWave::RMagick # Delegates things like resizing to rmagick/imagemagick. Don't forget to gem 'rmagick'.
+
+  storage :file
+
+  def store_dir
+    "uploads/#{model.class.to_s.underscore}/#{mounted_as}/#{model.id}"
+  end
+
+  version :thumb do
+    process :resize_to_limit => [200, 200]
+  end
+end
+# Show view:
+= image_tag painting.image_url(:thumb) if painting.image?
+# Edit view:
+= f.file_field :image
+= f.label :remote_image_url, "or image URL"
+= f.text_field :remote_image_url
+# Note that CarrierWave allows us to "attach" an image via a remote url. Automagic!
+# Lots of other features, such as removing attached files, S3 support, etc.
+
+
+# Railscast 254
 
 
 
