@@ -5384,7 +5384,7 @@ end
 # Railscast 254
 # Pagination with Kaminari.
 # Whoa, a challenger to will_paginate? Bates mentions the temporary will_paginate incompatibility w/ Rails 3. (May no longer be relevant.)
-# Kaminari gives us a nice page() scope.
+# Kaminari gives us a nice page() scope. Fits right in with AR3.
 @products = Product.order("name").page(params[:page]).per(5) # Default 'per' is 25.
 # In the view...
 = paginate @products
@@ -5403,6 +5403,39 @@ en:
 # Note that Kaminari is an engine, so we can override the views to customize it's look.
 rails g kaminari:views
 # Themes are available: https://github.com/amatsuda/kaminari_themes
+
+
+# Railscast 255
+# Undo with paper_trail
+# References 177 "model versioning" (vestal_versions) and 164 "cron in ruby"
+# paper_trail serializes model versions, persisted in a "versions" table.
+rails g paper_trail:install
+rake db:migrate
+# models/product.rb
+has_paper_trail
+# Now to implement an "undo" link...
+rails g controller versions
+# routes.rb
+post "versions/:id/revert" => "versions#revert", :as => "revert_version"
+# versions_controller.rb
+def revert
+  @version = Version.find(params[:id])
+  if @version.reify
+    @version.reify.save!
+  else
+    @version.item.destroy
+  end
+  link_name = params[:redo] == "true" ? "undo" : "redo"
+  link = view_context.link_to(link_name, revert_version_path(@version.next, :redo => !params[:redo]), :method => :post)
+  redirect_to :back, :notice => "Undid #{@version.event}. #{link}" # Don't forget to use raw in the flash rendering call in the view.
+end
+# products_controller.rb
+def undo_link
+  view_context.link_to("undo", revert_version_path(@product.versions.scoped.last), :method => :post)
+end
+# Notice the Rails 3 "view_context" object, letting us call view methods in the controller. Yay!
+
+
 
 
 
