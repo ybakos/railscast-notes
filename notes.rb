@@ -5436,7 +5436,44 @@ end
 # Notice the Rails 3 "view_context" object, letting us call view methods in the controller. Yay!
 
 
+# Railscast 256
+# I18N Backends
+# References 138
+# Using rails' translate() and local yaml files gets tedious over time... and means we as prog'ers have to add the tranlated text to the yaml files.
+# How about a "backend" that provides a Web UI so a translator can manage this stuff?
+# Fuch's i18n gem is cool, but if you use the AR store, you've chosen slow db persistence.
+# https://github.com/svenfuchs/i18n-active_record
+# Can config i18n to use, say, a key-value store. Tokyo Cabinet, anyone?
+# config/initializers/i18n_backend.rb
+# I18n.backend = I18n::Backend::KeyValue.new({}) # <<-- the cheapest approach, a simple hash.... but volatile
+TRANSLATION_STORE = Redis.new
+I18n.backend = I18n::Backend::Chain.new(I18n::Backend::KeyValue.new(TRANSLATION_STORE), I18n.backend)
+# Note the second argument above is any number of 'fallback' kv stores of translations.
+# translations_controller.rb
+def index
+  @translations = TRANSLATION_STORE
+end
 
+def create
+  I18n.backend.store_translations(params[:locale], {params[:key] => params[:value]}, :escape => false)
+  redirect_to translations_url, :notice => "Added translation"
+end
+# View...
+@translations.keys.each do |key|
+  = "#{key} : #{@translations[key]}"
+# Form...
+= form_tag translations_path do
+  = label_tag :locale
+  = text_field_tag :locale
+  = label_tag :key
+  = text_field_tag :key
+  = label_tag :value
+  = text_field_tag :value
+  = submit_tag "Submit"
+# Note that we can still fall back to the yaml translations if a key isn't in the kv store. See the I18n.backend config above in the initializer.
+
+
+# Railscast 257
 
 
 # Railscast 265 Rails 3.1 Overview
