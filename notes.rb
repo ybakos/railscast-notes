@@ -2868,7 +2868,7 @@ form_for [@commentable, Comment.new] do |f|
 # Beginning with Cucumber
 # Think of cucumber as a high-level test suite (ala Rails integration tests) applied to the entire stack.
 # script/generate cucumber sets up your Rails app for Cucumber use.
-# Create feature file, eg manage_articles.feature
+# Create feature file, eg features/manage_articles.feature
 Feature: Manage Articles
   In order to make a blog
   As an author
@@ -5490,3 +5490,8 @@ end
 # Can pass subdomain option to url helpers.
 # Uses the turn gem to beautify test output
 # Gist of changelog: https://gist.github.com/958283
+
+
+# Railscast 274
+# Remember Me and Reset Password
+
